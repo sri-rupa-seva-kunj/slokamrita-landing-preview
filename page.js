@@ -7,6 +7,7 @@ function setTheme(value) {
   theme.setAttribute('aria-pressed', String(value === 'dark'));
   const otherEdition = document.querySelector('.edition-switch a:not([aria-current])');
   const url = new URL(otherEdition.href);
+  if (url.protocol === 'file:' && url.pathname.endsWith('/')) url.pathname += 'index.html';
   if (value === 'dark') url.searchParams.set('theme', 'dark');
   else url.searchParams.delete('theme');
   otherEdition.href = url.href;
@@ -66,22 +67,28 @@ seek.addEventListener('input', () => { audio.currentTime = Number(seek.value); u
 volume.addEventListener('click', () => { audio.muted = !audio.muted; });
 updatePlayer();
 
+const exampleLine = document.querySelector('#example-line');
+const modeButtons = [...document.querySelectorAll('[data-reading-mode]')];
+for (const button of modeButtons) {
+  button.addEventListener('click', () => {
+    const sanskritOnly = button.dataset.readingMode === 'sanskrit';
+    for (const item of modeButtons) item.setAttribute('aria-pressed', String(item === button));
+    exampleLine.classList.toggle('sanskrit-only', sanskritOnly);
+  });
+}
+
 const enableTilt = matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
 for (const photo of document.querySelectorAll('[data-photo-tilt]')) {
-  function clearPhoto() {
-    for (const name of ['rx', 'ry', 'x', 'y', 'scale']) photo.style.removeProperty('--photo-' + name);
-  }
   photo.addEventListener('pointermove', event => {
     if (!enableTilt.matches || event.pointerType !== 'mouse') return;
     const rect = photo.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
-    photo.style.setProperty('--photo-rx', (-y * 7).toFixed(2) + 'deg');
-    photo.style.setProperty('--photo-ry', (x * 8).toFixed(2) + 'deg');
-    photo.style.setProperty('--photo-x', (-x * 1.8).toFixed(2) + '%');
-    photo.style.setProperty('--photo-y', (-y * 1.8).toFixed(2) + '%');
-    photo.style.setProperty('--photo-scale', '1.035');
+    photo.style.setProperty('--photo-depth', Math.max(1800, rect.width * 1.6, rect.height * 2) + 'px');
+    photo.style.setProperty('--photo-rx', (-y * 5).toFixed(2) + 'deg');
+    photo.style.setProperty('--photo-ry', (x * 6).toFixed(2) + 'deg');
+    photo.style.setProperty('--photo-x', (-x * 1.1).toFixed(2) + '%');
+    photo.style.setProperty('--photo-y', (-y * 1.1).toFixed(2) + '%');
+    photo.style.setProperty('--photo-scale', '1.075');
   });
-  photo.addEventListener('pointerleave', clearPhoto);
-  enableTilt.addEventListener('change', clearPhoto);
 }
