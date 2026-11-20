@@ -1,32 +1,87 @@
-const root=document.documentElement;
-const theme=document.querySelector('#theme');
-const setTheme=value=>{root.dataset.theme=value;theme.setAttribute('aria-pressed',String(value==='dark'))};
-setTheme(new URLSearchParams(location.search).get('theme')==='dark'?'dark':'light');
-theme.addEventListener('click',()=>setTheme(root.dataset.theme==='light'?'dark':'light'));
-const articles=[
- ['Первая шлока на слух','Откройте «Бхагавад-гиту» 2.13 и послушайте рецитацию Нитьянанды Прабху. После первой строки «dehino ’smin yathā dehe» поставьте запись на паузу и повторите её вслух.','Прочитайте перевод целиком, чтобы понимать, о чём стих. На следующий день попробуйте вспомнить первую строку до того, как откроете запись, и только потом добавьте вторую.','https://slokamrita.com/ru/verse/bhagavad-gita-2-13/','Открыть стих и запись'],
- ['Что меняет черта над «ā»?','В латинской записи санскрита черта над гласной обозначает долготу. Посмотрите на yathā и jarā в «Бхагавад-гите» 2.13: оба слова заканчиваются на ā, а внутри у них короткая a.','Включите рецитацию и найдите оба слова на слух. Затем произнесите их сами, различая короткую и долгую гласную.','https://slokamrita.com/ru/verse/bhagavad-gita-2-13/','Открыть «Бхагавад-гиту» 2.13'],
- ['Зачем читать стих слово за словом','В «Бхагавад-гите» 12.8 пословник передаёт manaḥ как «ум», а buddhim как «разум». В самом стихе эти слова выглядят как mana и buddhiṁ. Попробуйте найти их в первых двух строках.','Теперь перечитайте литературный перевод: Кришна говорит Арджуне сосредоточить на Нём ум и направить на Него разум. Пословник помогает увидеть, откуда взялись оба слова в переводе.','https://slokamrita.com/ru/verse/bhagavad-gita-12-8/','Сравнить переводы стиха 12.8'],
-];
-const dialog=document.querySelector('#detail'),title=document.querySelector('#dialog-title'),tag=document.querySelector('#dialog-tag'),body=document.querySelector('#dialog-body');
-function openDetail(label,heading,paragraphs,link){tag.textContent=label;title.textContent=heading;body.replaceChildren();for(const text of paragraphs){const p=document.createElement('p');p.textContent=text;body.append(p)}if(link){const a=document.createElement('a');a.href=link[0];a.textContent=link[1];body.append(a)}dialog.showModal()}
-document.querySelectorAll('.article-trigger').forEach(btn=>btn.addEventListener('click',()=>{const [headline,p1,p2,href,label]=articles[Number(btn.dataset.article)];openDetail('ЧЕРНОВИК СТАТЬИ',headline,[p1,p2],[href,label])}));
-document.querySelectorAll('.group-trigger').forEach(btn=>btn.addEventListener('click',()=>openDetail('TELEGRAM','Ссылка пока не добавлена',['Здесь появится приглашение в группу совместного изучения шлок.'])));
-document.querySelector('#close').addEventListener('click',()=>dialog.close());
-const audio=document.querySelector('#recitation');
-const playButton=document.querySelector('.recitation-button');
-const audioError=document.querySelector('#recitation-error');
-function updateRecitation(){
-  const playing=!audio.paused&&!audio.ended;
-  playButton.querySelector('.play-icon').hidden=playing;
-  playButton.querySelector('.pause-icon').hidden=!playing;
-  playButton.querySelector('.recitation-label').textContent=playing?'Пауза':'Слушать рецитацию';
+const root = document.documentElement;
+const en = root.lang === 'en';
+const query = new URLSearchParams(location.search);
+const theme = document.querySelector('#theme');
+function setTheme(value) {
+  root.dataset.theme = value;
+  theme.setAttribute('aria-pressed', String(value === 'dark'));
+  const otherEdition = document.querySelector('.edition-switch a:not([aria-current])');
+  const url = new URL(otherEdition.href);
+  if (value === 'dark') url.searchParams.set('theme', 'dark');
+  else url.searchParams.delete('theme');
+  otherEdition.href = url.href;
 }
-for(const event of ['play','pause','ended']) audio.addEventListener(event,updateRecitation);
-audio.addEventListener('error',()=>{audioError.hidden=false;updateRecitation()});
-playButton.addEventListener('click',async()=>{
-  if(!audio.paused){audio.pause();return}
-  audioError.hidden=true;
-  if(audio.error) audio.load();
-  try{await audio.play()}catch(error){if(error.name!=='AbortError') audioError.hidden=false}
+setTheme(query.get('theme') === 'dark' ? 'dark' : 'light');
+theme.addEventListener('click', () => setTheme(root.dataset.theme === 'light' ? 'dark' : 'light'));
+
+const audio = document.querySelector('#recitation');
+const play = document.querySelector('.recitation-button');
+const stop = document.querySelector('.recitation-stop');
+const seek = document.querySelector('.recitation-seek');
+const time = document.querySelector('.recitation-time');
+const volume = document.querySelector('.recitation-volume');
+const errorText = document.querySelector('#recitation-error');
+const labels = en
+  ? { play: 'Play', pause: 'Pause', mute: 'Mute', unmute: 'Unmute' }
+  : { play: 'Воспроизвести', pause: 'Пауза', mute: 'Отключить звук', unmute: 'Включить звук' };
+function setLabel(element, label) {
+  element.setAttribute('aria-label', label);
+  element.title = label;
+}
+function formatTime(seconds) {
+  const whole = Math.floor(seconds);
+  return Math.floor(whole / 60) + ':' + String(whole % 60).padStart(2, '0');
+}
+function updatePlayer() {
+  const playing = !audio.paused && !audio.ended;
+  const loaded = Number.isFinite(audio.duration);
+  play.children[0].hidden = playing;
+  play.children[1].hidden = !playing;
+  setLabel(play, playing ? labels.pause : labels.play);
+  stop.disabled = !playing && audio.currentTime === 0;
+  seek.disabled = !loaded;
+  seek.max = String(loaded ? audio.duration : 15);
+  seek.value = String(audio.currentTime);
+  const duration = formatTime(loaded ? audio.duration : 15);
+  time.textContent = formatTime(audio.currentTime) + ' / ' + duration;
+  seek.setAttribute('aria-valuetext', time.textContent);
+  volume.children[0].hidden = audio.muted;
+  volume.children[1].hidden = !audio.muted;
+  setLabel(volume, audio.muted ? labels.unmute : labels.mute);
+}
+for (const event of ['play', 'pause', 'ended', 'loadedmetadata', 'timeupdate', 'volumechange']) {
+  audio.addEventListener(event, updatePlayer);
+}
+audio.addEventListener('error', () => { errorText.hidden = false; updatePlayer(); });
+play.addEventListener('click', async () => {
+  if (!audio.paused) { audio.pause(); return; }
+  errorText.hidden = true;
+  if (audio.error) audio.load();
+  try { await audio.play(); } catch (error) {
+    if (error.name !== 'AbortError') errorText.hidden = false;
+  }
 });
+stop.addEventListener('click', () => { audio.pause(); audio.currentTime = 0; updatePlayer(); });
+seek.addEventListener('input', () => { audio.currentTime = Number(seek.value); updatePlayer(); });
+volume.addEventListener('click', () => { audio.muted = !audio.muted; });
+updatePlayer();
+
+const enableTilt = matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
+for (const photo of document.querySelectorAll('[data-photo-tilt]')) {
+  function clearPhoto() {
+    for (const name of ['rx', 'ry', 'x', 'y', 'scale']) photo.style.removeProperty('--photo-' + name);
+  }
+  photo.addEventListener('pointermove', event => {
+    if (!enableTilt.matches || event.pointerType !== 'mouse') return;
+    const rect = photo.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    photo.style.setProperty('--photo-rx', (-y * 7).toFixed(2) + 'deg');
+    photo.style.setProperty('--photo-ry', (x * 8).toFixed(2) + 'deg');
+    photo.style.setProperty('--photo-x', (-x * 1.8).toFixed(2) + '%');
+    photo.style.setProperty('--photo-y', (-y * 1.8).toFixed(2) + '%');
+    photo.style.setProperty('--photo-scale', '1.035');
+  });
+  photo.addEventListener('pointerleave', clearPhoto);
+  enableTilt.addEventListener('change', clearPhoto);
+}
