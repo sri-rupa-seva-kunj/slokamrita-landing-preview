@@ -12,8 +12,18 @@ function setTheme(value) {
   else url.searchParams.delete('theme');
   otherEdition.href = url.href;
 }
-setTheme(query.get('theme') === 'dark' ? 'dark' : 'light');
-theme.addEventListener('click', () => setTheme(root.dataset.theme === 'light' ? 'dark' : 'light'));
+setTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
+theme.addEventListener('click', () => {
+  const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+  setTheme(next);
+  try { localStorage.setItem('slokamrita-landing-theme', next); } catch {}
+});
+const systemDark = matchMedia('(prefers-color-scheme: dark)');
+systemDark.addEventListener('change', event => {
+  let saved = null;
+  try { saved = localStorage.getItem('slokamrita-landing-theme'); } catch {}
+  if (!query.get('theme') && !saved) setTheme(event.matches ? 'dark' : 'light');
+});
 
 const audio = document.querySelector('#recitation');
 const play = document.querySelector('.recitation-button');
