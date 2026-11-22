@@ -15,7 +15,7 @@
 
 *{box-sizing:border-box;letter-spacing:0}
 [hidden]{display:none!important}
-html{scroll-behavior:smooth;scrollbar-gutter:stable}
+html{scroll-behavior:smooth;scrollbar-gutter:stable;scroll-padding-top:20px}
 body{margin:0;color:var(--ink);background:var(--page);font:17px/1.56 PT,Arial,sans-serif;transition:background-color .4s var(--ease),color .4s var(--ease)}
 h1,h2,h3,p,figure,blockquote,dl,dd,ol,ul{margin:0}
 ol,ul{padding:0;list-style:none}
@@ -418,3 +418,10 @@ html:not([data-theme=dark]) [data-word-links=on] .word-link-source.word-link-act
 .shot-contain{display:grid;place-items:center;padding:18px 22px}
 .shot-contain img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
 .quote-mark{height:56px;font-size:110px;line-height:.9}
+/* Contained shots: an explicit cap, since max-height:100% does not resolve inside the grid cell. */
+.shot-contain{padding:18px 22px 22px}
+.shot-contain img{max-height:calc(230px - 40px)}
+.tile-wide .shot{height:340px}
+.tile-wide .shot-contain img{max-height:calc(340px - 40px)}
+.shot-contain::after{display:none}
+@media(max-width:760px){.tile-wide .shot,.shot{height:200px}.shot-contain img,.tile-wide .shot-contain img{max-height:160px}}
