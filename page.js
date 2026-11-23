@@ -168,6 +168,23 @@ featureToggles.forEach(toggle => toggle.addEventListener('click', () => {
 phoneLayout.addEventListener('change', layoutFeatures);
 layoutFeatures();
 
+/* "Share" from the former About page: the system share sheet, or copy the link. */
+for (const button of document.querySelectorAll('[data-share]')) {
+  const status = button.closest('div').parentElement.querySelector('.share-status');
+  button.addEventListener('click', async () => {
+    const data = { title: button.dataset.shareTitle, text: button.dataset.shareText, url: location.origin + location.pathname };
+    if (navigator.share) {
+      try { await navigator.share(data); } catch {}
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(data.url);
+      status.textContent = button.dataset.copied;
+      setTimeout(() => { status.textContent = ''; }, 2500);
+    } catch {}
+  });
+}
+
 /* Hero photo tilt (mouse only, keeps the last position). */
 const enableTilt = matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
 for (const photo of document.querySelectorAll('[data-photo-tilt]')) {
