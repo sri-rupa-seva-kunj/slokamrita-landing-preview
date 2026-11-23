@@ -144,6 +144,30 @@ document.querySelectorAll('[data-demo]').forEach(link => link.addEventListener('
   app.classList.add('app-window-flash');
 }));
 
+/* Features: on phones every tile is a collapsed row with its title; tapping opens the shot and copy.
+   On wider screens the tiles stay a bento grid, and the title buttons are inert. */
+const phoneLayout = matchMedia('(max-width: 760px)');
+const featureToggles = [...document.querySelectorAll('.tile-toggle')];
+const panelOf = toggle => document.getElementById(toggle.getAttribute('aria-controls'));
+function setFeature(toggle, open) {
+  toggle.setAttribute('aria-expanded', String(open));
+  panelOf(toggle).hidden = !open;
+}
+function layoutFeatures() {
+  const accordion = phoneLayout.matches;
+  for (const toggle of featureToggles) {
+    toggle.tabIndex = accordion ? 0 : -1;
+    if (accordion) toggle.removeAttribute('aria-disabled'); else toggle.setAttribute('aria-disabled', 'true');
+    setFeature(toggle, !accordion);
+  }
+}
+featureToggles.forEach(toggle => toggle.addEventListener('click', () => {
+  if (!phoneLayout.matches) return;
+  setFeature(toggle, toggle.getAttribute('aria-expanded') !== 'true');
+}));
+phoneLayout.addEventListener('change', layoutFeatures);
+layoutFeatures();
+
 /* Hero photo tilt (mouse only, keeps the last position). */
 const enableTilt = matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
 for (const photo of document.querySelectorAll('[data-photo-tilt]')) {
