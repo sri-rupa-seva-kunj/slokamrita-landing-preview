@@ -60,33 +60,100 @@ modeButtons.forEach(button => button.addEventListener('click', () => {
   const modes = currentModes();
   const mode = button.dataset.mode;
   const next = modes.includes(mode) ? modes.filter(m => m !== mode) : [...modes, mode];
-  setModes(next.length ? next : [mode]);
+  setModes(next);
 }));
 
 /* Word links: the same DOM-only highlighting as the app's word-link-interaction. */
-let hovered = '', pinned = '';
-function paintWord(key) {
-  scope.querySelectorAll('[data-word-link]').forEach(node => node.classList.toggle('word-link-active', !!key && node.dataset.wordLink === key));
-}
 const keyOf = target => target instanceof Element ? target.closest('[data-word-link]')?.dataset.wordLink || '' : '';
-const linkedOn = () => scope.dataset.wordLinks === 'on';
-scope.addEventListener('pointerover', event => { if (event.pointerType !== 'touch' && linkedOn()) { hovered = keyOf(event.target); paintWord(hovered || pinned); } });
-scope.addEventListener('pointerleave', () => { hovered = ''; paintWord(pinned); });
-scope.addEventListener('click', event => {
-  if (!linkedOn()) return;
-  const key = keyOf(event.target);
-  pinned = key && pinned !== key ? key : '';
-  paintWord(hovered || pinned);
-});
-scope.addEventListener('focusin', event => { if (linkedOn()) paintWord(keyOf(event.target)); });
-scope.addEventListener('focusout', () => paintWord(pinned));
-scope.addEventListener('keydown', event => {
-  if (!linkedOn()) return;
-  if (event.key === 'Escape') { pinned = ''; paintWord(''); }
-  if (event.key === 'Enter' || event.key === ' ') { const key = keyOf(event.target); if (key) { event.preventDefault(); pinned = pinned === key ? '' : key; paintWord(pinned); } }
-});
+function wireWordLinks(root) {
+  let hovered = '', pinned = '';
+  const paint = key => root.querySelectorAll('[data-word-link]').forEach(node => node.classList.toggle('word-link-active', !!key && node.dataset.wordLink === key));
+  const on = () => root.dataset.wordLinks === 'on';
+  root.addEventListener('pointerover', event => { if (event.pointerType !== 'touch' && on()) { hovered = keyOf(event.target); paint(hovered || pinned); } });
+  root.addEventListener('pointerleave', () => { hovered = ''; paint(pinned); });
+  root.addEventListener('click', event => {
+    if (!on()) return;
+    const key = keyOf(event.target);
+    pinned = key && pinned !== key ? key : '';
+    paint(hovered || pinned);
+  });
+  root.addEventListener('focusin', event => { if (on()) paint(keyOf(event.target)); });
+  root.addEventListener('focusout', () => paint(pinned));
+  root.addEventListener('keydown', event => {
+    if (!on()) return;
+    if (event.key === 'Escape') { pinned = ''; paint(''); }
+    if (event.key === 'Enter' || event.key === ' ') { const key = keyOf(event.target); if (key) { event.preventDefault(); pinned = pinned === key ? '' : key; paint(pinned); } }
+  });
+  return { reset() { pinned = ''; hovered = ''; paint(''); } };
+}
+const readingLinks = wireWordLinks(scope);
+function paintWord(key) { if (!key) readingLinks.reset(); }
 scope.querySelectorAll('.word-link-source[data-word-link]').forEach(node => { node.tabIndex = 0; });
 setModes(currentModes());
+
+/* Slides tab: a working slide-show viewer. The verse is a copy of the reading block;
+   the rail sets what is shown, hides the title, and expands the slide to full screen. */
+const slide = app.querySelector('[data-slide]');
+const slideSurface = app.querySelector('#app-reading-content').cloneNode(true);
+slideSurface.removeAttribute('id');
+const slideScope = slideSurface.querySelector('.word-links-scope');
+slide.querySelector('[data-slide-body]').append(slideSurface);
+const settingsButton = slide.querySelector('[data-slide-settings]');
+const slideMenu = slide.querySelector('.slide-menu');
+const slideModes = [...slide.querySelectorAll('[data-slide-mode]')];
+function setSlideModes() {
+  const modes = slideModes.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.slideMode);
+  slide.dataset.modes = modes.join(' ');
+  const linked = modes.includes('wordByWord') && modes.includes('sanskrit');
+  slideScope.dataset.wordLinks = linked ? 'on' : 'off';
+  slideScope.querySelectorAll('.word-link-source[data-word-link]').forEach(node => { node.tabIndex = linked ? 0 : -1; });
+}
+const slideLinks = wireWordLinks(slideScope);
+setSlideModes();
+function openMenu(open, focus) {
+  settingsButton.setAttribute('aria-expanded', String(open));
+  slideMenu.hidden = !open;
+  if (open && focus) slideModes[0].focus({ preventScroll: true });
+}
+settingsButton.addEventListener('click', event => openMenu(slideMenu.hidden, event.detail === 0));
+slideModes.forEach((button, index) => {
+  button.addEventListener('click', () => {
+    button.setAttribute('aria-checked', String(button.getAttribute('aria-checked') !== 'true'));
+    slideLinks.reset();
+    setSlideModes();
+  });
+  button.addEventListener('keydown', event => {
+    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
+    if (step) { event.preventDefault(); slideModes[(index + step + slideModes.length) % slideModes.length].focus(); }
+    if (event.key === 'Escape') { openMenu(false); settingsButton.focus(); }
+  });
+});
+document.addEventListener('pointerdown', event => { if (!slideMenu.hidden && !event.target.closest('.slide-settings')) openMenu(false); });
+const fullButton = slide.querySelector('[data-slide-full]');
+if (!slide.requestFullscreen) fullButton.hidden = true;
+fullButton.addEventListener('click', () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else slide.requestFullscreen?.().catch(() => {});
+});
+document.addEventListener('fullscreenchange', () => {
+  const full = document.fullscreenElement === slide;
+  fullButton.children[0].hidden = full;
+  fullButton.children[1].hidden = !full;
+  const label = full ? fullButton.dataset.labelExit : fullButton.dataset.labelEnter;
+  fullButton.setAttribute('aria-label', label);
+  fullButton.title = label;
+});
+const chromeButton = slide.querySelector('[data-slide-chrome]');
+const chromeLabels = en ? ['Hide the title', 'Show the title'] : ['Скрыть название', 'Показать название'];
+chromeButton.addEventListener('click', () => {
+  const hide = chromeButton.getAttribute('aria-pressed') !== 'true';
+  chromeButton.setAttribute('aria-pressed', String(hide));
+  slide.dataset.chrome = hide ? 'hidden' : 'shown';
+  chromeButton.children[0].hidden = hide;
+  chromeButton.children[1].hidden = !hide;
+  chromeButton.setAttribute('aria-label', chromeLabels[hide ? 1 : 0]);
+  chromeButton.title = chromeLabels[hide ? 1 : 0];
+});
 
 /* Recording card player, styled after the Materials tab. */
 const audio = document.querySelector('#recitation');
@@ -144,27 +211,75 @@ document.querySelectorAll('[data-demo]').forEach(link => link.addEventListener('
   app.classList.add('app-window-flash');
 }));
 
-/* Features: on phones every tile is a collapsed row with its title; tapping opens the shot and copy.
-   On wider screens the tiles stay a bento grid, and the title buttons are inert. */
+/* Features: on wider screens a list beside one detail card, switched as a vertical carousel
+   (the old card shrinks and fades out, the new one grows in from the direction of travel);
+   on phones every entry is a collapsed row with its title and a short line, opened in place. */
 const phoneLayout = matchMedia('(max-width: 760px)');
-const featureToggles = [...document.querySelectorAll('.tile-toggle')];
+const explorer = document.querySelector('[data-feature-explorer]');
+const featureToggles = [...explorer.querySelectorAll('.feature-toggle')];
 const panelOf = toggle => document.getElementById(toggle.getAttribute('aria-controls'));
-function setFeature(toggle, open) {
-  toggle.setAttribute('aria-expanded', String(open));
-  panelOf(toggle).hidden = !open;
+let activeFeature = 0;
+const leaveTimers = new Map();
+function finishLeaving(panel) {
+  clearTimeout(leaveTimers.get(panel));
+  leaveTimers.delete(panel);
+  panel.classList.remove('is-leaving');
+  if (!panel.classList.contains('is-current')) panel.hidden = true;
+}
+function showFeature(index, animate) {
+  const previous = activeFeature;
+  activeFeature = index;
+  featureToggles.forEach((toggle, i) => {
+    toggle.setAttribute('aria-expanded', String(i === index));
+    panelOf(toggle).classList.toggle('is-current', i === index);
+  });
+  if (!animate || previous === index || reduceMotion.matches) {
+    featureToggles.forEach((toggle, i) => { const panel = panelOf(toggle); clearTimeout(leaveTimers.get(panel)); panel.classList.remove('is-entering', 'is-leaving'); panel.hidden = i !== index; });
+    return;
+  }
+  // Cards still leaving from an earlier switch disappear at once.
+  featureToggles.forEach((toggle, i) => { const panel = panelOf(toggle); if (i !== index && i !== previous && !panel.hidden) finishLeaving(panel); });
+  explorer.style.setProperty('--dir', index > previous ? '1' : '-1');
+  const outgoing = panelOf(featureToggles[previous]);
+  outgoing.classList.add('is-leaving');
+  clearTimeout(leaveTimers.get(outgoing));
+  leaveTimers.set(outgoing, setTimeout(() => finishLeaving(outgoing), 750));
+  const incoming = panelOf(featureToggles[index]);
+  clearTimeout(leaveTimers.get(incoming));
+  incoming.classList.remove('is-leaving');
+  incoming.classList.add('is-entering');
+  incoming.hidden = false;
+  void incoming.offsetWidth;
+  incoming.classList.remove('is-entering');
 }
 function layoutFeatures() {
-  const accordion = phoneLayout.matches;
-  for (const toggle of featureToggles) {
-    toggle.tabIndex = accordion ? 0 : -1;
-    if (accordion) toggle.removeAttribute('aria-disabled'); else toggle.setAttribute('aria-disabled', 'true');
-    setFeature(toggle, !accordion);
-  }
+  if (phoneLayout.matches) {
+    featureToggles.forEach(toggle => {
+      const panel = panelOf(toggle);
+      toggle.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+      panel.classList.remove('is-entering', 'is-leaving', 'is-current');
+    });
+  } else showFeature(activeFeature, false);
 }
-featureToggles.forEach(toggle => toggle.addEventListener('click', () => {
-  if (!phoneLayout.matches) return;
-  setFeature(toggle, toggle.getAttribute('aria-expanded') !== 'true');
-}));
+featureToggles.forEach((toggle, index) => {
+  toggle.addEventListener('click', () => {
+    if (phoneLayout.matches) {
+      const open = toggle.getAttribute('aria-expanded') !== 'true';
+      toggle.setAttribute('aria-expanded', String(open));
+      panelOf(toggle).hidden = !open;
+    } else showFeature(index, true);
+  });
+  toggle.addEventListener('keydown', event => {
+    if (phoneLayout.matches) return;
+    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const next = (index + step + featureToggles.length) % featureToggles.length;
+    featureToggles[next].focus();
+    showFeature(next, true);
+  });
+});
 phoneLayout.addEventListener('change', layoutFeatures);
 layoutFeatures();
 
@@ -205,7 +320,13 @@ for (const photo of document.querySelectorAll('[data-photo-tilt]')) {
 /* Gentle reveal of sections as they enter the viewport. */
 if ('IntersectionObserver' in window && !reduceMotion.matches) {
   const observer = new IntersectionObserver(entries => {
-    for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add('in-view'); observer.unobserve(entry.target); }
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const node = entry.target;
+      node.classList.add('in-view');
+      observer.unobserve(node);
+      setTimeout(() => node.classList.remove('reveal', 'in-view'), 1000);
+    }
   }, { rootMargin: '0px 0px -8% 0px' });
-  document.querySelectorAll('.tile, .app-window, .group-cta, .project, .steps li').forEach(node => { node.classList.add('reveal'); observer.observe(node); });
+  document.querySelectorAll('.feature-explorer, .app-window, .group-cta, .project, .steps li').forEach(node => { node.classList.add('reveal'); observer.observe(node); });
 }
