@@ -400,6 +400,17 @@ addEventListener('resize', () => { if (!phoneLayout.matches) sizeDrum(); });
 document.fonts?.ready.then(() => { if (!phoneLayout.matches) sizeDrum(); });
 featurePanels.forEach(panel => panel.querySelector('img')?.addEventListener('load', () => { if (!phoneLayout.matches) sizeDrum(); }));
 layoutFeatures();
+// The screenshots in the features (and the AI shot beside «Мои шлоки») are fetched as soon as the page
+// has loaded, not when they scroll into view, so a card never turns with an empty picture.
+// Only the current theme's copies: the other theme's are fetched when the theme switches.
+function fetchShots() {
+  for (const img of document.querySelectorAll('.feature-panel img, .cabinet-shot img')) {
+    if (img.loading === 'lazy' && getComputedStyle(img).display !== 'none') img.loading = 'eager';
+  }
+}
+if (document.readyState === 'complete') fetchShots();
+else addEventListener('load', fetchShots, { once: true });
+new MutationObserver(() => requestAnimationFrame(fetchShots)).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 
 /* Team: as many columns as fit, then evened out so the rows hold about the same number of people
    (five people on room for four: three and two, not four and one). */
@@ -545,4 +556,69 @@ if ('IntersectionObserver' in window && !reduceMotion.matches) {
     }
   });
   matchMedia('(min-width: 901px)').addEventListener('change', event => { if (event.matches) setMenu(false); });
+}
+
+/* Desktop: sections slide in as they come into view, from the side they sit on; lists come in one
+   item after another. Each element goes back to its own styles once it is in. Phones, reduced motion
+   and browsers without IntersectionObserver get the page as it is. */
+if (root.classList.contains('reveal-on')) {
+  const groups = [
+    ['.section-head > :first-child', 'left'],
+    ['.section-head > :last-child:not(:first-child)', 'right'],
+    ['.day .app-window', 'zoom'],
+    ['.day-foot', 'up'],
+    ['.feature-explorer > li', 'left', 0.06],
+    ['.feature-drum', 'right'],
+    ['.community-copy', 'left'],
+    ['.quote-block', 'right'],
+    ['.cabinet .feature-copy', 'left'],
+    ['.cabinet-shot', 'right'],
+    ['.lecture .product-shot', 'left'],
+    ['.lecture .feature-copy', 'right'],
+    ['.app-grid > div', 'left'],
+    ['.app-grid > .device', 'zoom'],
+    ['.post-list > li', 'up', 0.1],
+    ['.about-grid > :first-child', 'left'],
+    ['.about-grid > .srsk', 'right'],
+    ['.about-team > h3', 'up'],
+    ['.team-list > li', 'up', 0.07],
+    ['.about-bottom > div', 'up', 0.1],
+    ['.project-list > *', 'up', 0.1],
+    ['.closing .wrap > *', 'up', 0.08],
+  ];
+  const marked = [];
+  for (const [selector, from, stagger = 0] of groups) {
+    document.querySelectorAll(selector).forEach(element => {
+      if (element.hasAttribute('data-reveal')) return;
+      element.dataset.reveal = from;
+      if (stagger) {
+        const index = [...element.parentElement.children].indexOf(element);
+        element.style.setProperty('--reveal-delay', Math.min(index * stagger, 0.5) + 's');
+      }
+      marked.push(element);
+    });
+  }
+  const settle = element => {
+    element.removeAttribute('data-reveal');
+    element.classList.remove('is-revealed');
+    element.style.removeProperty('--reveal-delay');
+  };
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const element = entry.target;
+      observer.unobserve(element);
+      element.classList.add('is-revealed');
+      const delay = parseFloat(element.style.getPropertyValue('--reveal-delay')) || 0;
+      setTimeout(() => settle(element), (delay + 1.2) * 1000);
+    }
+  }, { rootMargin: '0px 0px -8% 0px' });
+  marked.forEach(element => observer.observe(element));
+  // Shrunk to phone width: everything simply shows.
+  phoneLayout.addEventListener('change', () => {
+    if (!phoneLayout.matches) return;
+    observer.disconnect();
+    marked.forEach(settle);
+    root.classList.remove('reveal-on');
+  });
 }

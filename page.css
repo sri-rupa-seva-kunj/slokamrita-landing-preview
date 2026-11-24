@@ -259,12 +259,13 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .feature-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .tile-chevron{display:none}
 .feature-panel{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--raised);overflow:hidden;box-shadow:var(--shadow-lift)}
-/* The drum: the cards turn on a cylinder; the ones above and below stay in sight, smaller and tilted,
+/* The drum reaches 48px past its column on both sides so the cards' shadows are not cut off by its mask.
+   The drum: the cards turn on a cylinder; the ones above and below stay in sight, smaller and tilted,
    and fade out through the soft top and bottom edges of the window. */
-.feature-drum{position:sticky;top:72px;height:var(--drum-h,760px);perspective:1500px;perspective-origin:50% 50%;
+.feature-drum{position:sticky;top:72px;height:var(--drum-h,760px);margin-inline:-48px;perspective:1500px;perspective-origin:50% 50%;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 var(--drum-fade,110px),#000 calc(100% - var(--drum-fade,110px)),transparent 100%);
           mask-image:linear-gradient(to bottom,transparent 0,#000 var(--drum-fade,110px),#000 calc(100% - var(--drum-fade,110px)),transparent 100%)}
-.feature-drum .feature-panel{position:absolute;left:0;right:0;top:50%;height:var(--card-h,auto);transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,opacity;
+.feature-drum .feature-panel{position:absolute;left:48px;right:48px;top:50%;height:var(--card-h,auto);transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,opacity;
   transition:transform .95s cubic-bezier(.22,.8,.24,1),opacity .95s cubic-bezier(.22,.8,.24,1),box-shadow .6s var(--ease)}
 .feature-drum .feature-panel:not(.is-current){cursor:pointer;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
 .feature-drum .feature-panel:not(.is-current) *{pointer-events:none}
@@ -580,3 +581,24 @@ html.menu-open{overflow:hidden}
 /* "Hover over a word" on screens with a mouse, "tap a word" on phones and touch screens. */
 .on-touch{display:none}
 @media(max-width:760px),(hover:none){.on-pointer{display:none}.on-touch{display:inline}}
+
+/* ---------- Desktop: parts of the page slide in as they come into view ---------- */
+/* The hero rises line by line on load; the rest is marked by page.js and revealed on scroll. */
+@keyframes reveal-rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+html.reveal-on .hero-inner>*,html.reveal-on .hero-stats-row dl>div{animation:reveal-rise 1s cubic-bezier(.2,.7,.2,1) both}
+html.reveal-on .hero-inner>:nth-child(2){animation-delay:.08s}
+html.reveal-on .hero-inner>:nth-child(3){animation-delay:.16s}
+html.reveal-on .hero-inner>:nth-child(4){animation-delay:.24s}
+html.reveal-on .hero-inner>:nth-child(5){animation-delay:.32s}
+html.reveal-on .hero-inner>:nth-child(6){animation-delay:.4s}
+html.reveal-on .hero-inner>:nth-child(n+7){animation-delay:.48s}
+html.reveal-on .hero-stats-row dl>div{animation-delay:.5s}
+html.reveal-on .hero-stats-row dl>div:nth-child(2){animation-delay:.6s}
+html.reveal-on .hero-stats-row dl>div:nth-child(3){animation-delay:.7s}
+body{overflow-x:clip}
+html.reveal-on [data-reveal]{transition:opacity .95s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);transition-delay:var(--reveal-delay,0s)}
+html.reveal-on [data-reveal]:not(.is-revealed){opacity:0}
+html.reveal-on [data-reveal=up]:not(.is-revealed){transform:translateY(34px)}
+html.reveal-on [data-reveal=left]:not(.is-revealed){transform:translateX(-44px)}
+html.reveal-on [data-reveal=right]:not(.is-revealed){transform:translateX(44px)}
+html.reveal-on [data-reveal=zoom]:not(.is-revealed){transform:translateY(24px) scale(.965)}
