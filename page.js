@@ -252,12 +252,50 @@ function layoutFeatures() {
     showFeature(activeFeature);
   }
 }
+// Phones: an accordion, one entry open at a time; panels slide open and shut.
+function foldPanel(toggle, open) {
+  const panel = panelOf(toggle);
+  toggle.setAttribute('aria-expanded', String(open));
+  panel.getAnimations().forEach(animation => animation.cancel());
+  if (reduceMotion.matches) { panel.hidden = !open; return; }
+  panel.hidden = false;
+  const height = panel.scrollHeight + 'px';
+  const frames = open
+    ? [{ height: '0px', opacity: 0 }, { height, opacity: 1 }]
+    : [{ height, opacity: 1 }, { height: '0px', opacity: 0 }];
+  const animation = panel.animate(frames, { duration: open ? 420 : 320, easing: 'cubic-bezier(.22,.8,.24,1)' });
+  animation.onfinish = () => { panel.hidden = !open; };
+}
 featureToggles.forEach((toggle, index) => {
   toggle.addEventListener('click', () => {
     if (phoneLayout.matches) {
       const open = toggle.getAttribute('aria-expanded') !== 'true';
-      toggle.setAttribute('aria-expanded', String(open));
-      panelOf(toggle).hidden = !open;
+      // An entry open above this one shuts at once and the page scrolls by the same amount
+      // in the same frame, so the tapped title stays exactly where the finger is.
+      const before = toggle.getBoundingClientRect().top;
+      featureToggles.forEach((other, i) => {
+        if (other === toggle || other.getAttribute('aria-expanded') !== 'true') return;
+        if (i < index) {
+          const panel = panelOf(other);
+          panel.getAnimations().forEach(animation => animation.cancel());
+          other.setAttribute('aria-expanded', 'false');
+          panel.hidden = true;
+        } else foldPanel(other, false);
+      });
+      const shift = toggle.getBoundingClientRect().top - before;
+      if (shift) scrollBy({ top: shift, behavior: 'instant' });
+      foldPanel(toggle, open);
+      // Opened low on the screen, or too tall to fit below: the page glides up to the entry's start
+      // while it opens.
+      if (open) {
+        const item = toggle.closest('li');
+        const top = item.getBoundingClientRect().top;
+        const bottom = top + toggle.offsetHeight + panelOf(toggle).scrollHeight;
+        const headerBottom = document.querySelector('.site-header').getBoundingClientRect().bottom;
+        if (top > innerHeight * 0.4 || bottom > innerHeight - 12) {
+          scrollBy({ top: top - headerBottom - 10, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        }
+      }
     } else showFeature(index);
   });
   toggle.addEventListener('keydown', event => {
@@ -329,4 +367,88 @@ if ('IntersectionObserver' in window && !reduceMotion.matches) {
     }
   }, { rootMargin: '0px 0px -8% 0px' });
   document.querySelectorAll('.feature-explorer, .app-window, .group-cta, .project, .steps li').forEach(node => { node.classList.add('reveal'); observer.observe(node); });
+}
+
+/* Phones and tablets: the header's section links in a panel that slides in from the right. */
+{
+  const headerNav = document.querySelector('.header-row>nav');
+  const actions = document.querySelector('.header-actions');
+  const library = document.querySelector('.header-library');
+  const text = en ? { open: 'Menu', close: 'Close menu', title: 'Sections' } : { open: 'Меню', close: 'Закрыть меню', title: 'Разделы' };
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'menu-toggle';
+  button.setAttribute('aria-expanded', 'false');
+  button.setAttribute('aria-controls', 'site-menu');
+  button.setAttribute('aria-label', text.open);
+  button.innerHTML = '<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>';
+  actions.append(button);
+
+  const menu = document.createElement('div');
+  menu.className = 'site-menu';
+  menu.id = 'site-menu';
+  menu.hidden = true;
+  menu.innerHTML = `<div class="site-menu-backdrop" data-menu-close></div>
+    <div class="site-menu-panel" role="dialog" aria-modal="true" aria-label="${text.title}">
+      <div class="site-menu-head"><span>${text.title}</span><button type="button" class="site-menu-close" data-menu-close aria-label="${text.close}"><span aria-hidden="true"></span></button></div>
+      <nav class="site-menu-links"></nav>
+    </div>`;
+  const links = menu.querySelector('.site-menu-links');
+  headerNav.querySelectorAll('a').forEach((link, i) => {
+    const copy = document.createElement('a');
+    copy.href = link.getAttribute('href');
+    copy.innerHTML = `<span class="site-menu-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><span>${link.innerHTML}</span>`;
+    copy.style.setProperty('--i', i);
+    links.append(copy);
+  });
+  if (library) {
+    const app = library.cloneNode(true);
+    app.className = 'button primary site-menu-app';
+    app.style.setProperty('--i', links.children.length);
+    links.after(app);
+  }
+  document.body.append(menu);
+
+  const panel = menu.querySelector('.site-menu-panel');
+  let closeTimer;
+  function setMenu(open) {
+    clearTimeout(closeTimer);
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? text.close : text.open);
+    root.classList.toggle('menu-open', open);
+    if (open) {
+      menu.hidden = false;
+      void menu.offsetWidth;
+      menu.classList.add('is-open');
+      menu.querySelector('.site-menu-links a').focus({ preventScroll: true });
+    } else {
+      menu.classList.remove('is-open');
+      closeTimer = setTimeout(() => { menu.hidden = true; }, reduceMotion.matches ? 0 : 420);
+    }
+  }
+  button.addEventListener('click', () => setMenu(button.getAttribute('aria-expanded') !== 'true'));
+  menu.addEventListener('click', event => {
+    if (event.target.closest('[data-menu-close]')) { setMenu(false); button.focus({ preventScroll: true }); }
+    else if (event.target.closest('a')) {
+      const link = event.target.closest('a');
+      const target = link.hash && link.closest('.site-menu-links') ? document.querySelector(link.hash) : null;
+      setMenu(false);
+      if (!target) return;
+      // The page is unlocked first, then scrolled, so the jump always reaches the section.
+      event.preventDefault();
+      history.pushState(null, '', link.hash);
+      requestAnimationFrame(() => target.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' }));
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (menu.hidden) return;
+    if (event.key === 'Escape') { setMenu(false); button.focus({ preventScroll: true }); }
+    if (event.key === 'Tab') {
+      const items = [...panel.querySelectorAll('a,button')];
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+  matchMedia('(min-width: 901px)').addEventListener('change', event => { if (event.matches) setMenu(false); });
 }
