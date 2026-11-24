@@ -208,11 +208,27 @@ const featureToggles = [...explorer.querySelectorAll('.feature-toggle')];
 const panelOf = toggle => document.getElementById(toggle.getAttribute('aria-controls'));
 const featurePanels = featureToggles.map(panelOf);
 let activeFeature = 0;
+// Every card in the drum gets the height of the tallest one, and the cards sit one after another
+// with a gap: as the drum turns they slide along each other without ever overlapping, so no card
+// passes over or under another.
+const DRUM_GAP = 18;
+let cardHeight = 0;
 function sizeDrum() {
-  const tallest = Math.max(...featurePanels.map(panel => panel.offsetHeight));
-  const peek = Math.round(Math.min(130, Math.max(80, innerHeight * 0.12)));
-  drum.style.setProperty('--drum-h', tallest + peek * 2 + 'px');
-  drum.style.setProperty('--drum-fade', peek + 'px');
+  drum.style.removeProperty('--card-h');
+  cardHeight = Math.max(...featurePanels.map(panel => panel.offsetHeight));
+  const room = innerHeight - 72 - 12;
+  const peek = Math.round(Math.min(150, Math.max(70, (room - cardHeight) / 2)));
+  drum.style.setProperty('--card-h', cardHeight + 'px');
+  drum.style.setProperty('--drum-h', cardHeight + peek * 2 + 'px');
+  drum.style.setProperty('--drum-fade', Math.round(peek * 0.6) + 'px');
+  turnDrum();
+}
+const drumScale = distance => Math.max(0.6, 1 - distance * 0.12);
+// Distance from the drum's middle to the middle of the card `distance` places away.
+function drumOffset(distance) {
+  let y = 0;
+  for (let d = 1; d <= distance; d++) y += cardHeight * (drumScale(d - 1) + drumScale(d)) / 2 + DRUM_GAP;
+  return y;
 }
 function turnDrum() {
   featurePanels.forEach((panel, i) => {
@@ -223,11 +239,10 @@ function turnDrum() {
     panel.classList.toggle('is-current', current);
     panel.setAttribute('aria-hidden', String(!current));
     panel.querySelectorAll('a,button').forEach(node => { node.tabIndex = current ? 0 : -1; });
-    panel.style.zIndex = String(10 - distance);
-    panel.style.opacity = distance === 0 ? '1' : distance === 1 ? '.62' : '0';
+    panel.style.opacity = distance === 0 ? '1' : distance === 1 ? '.7' : '0';
     panel.style.pointerEvents = distance > 1 ? 'none' : '';
-    const shift = Math.sign(offset) * (distance === 0 ? 0 : 62 + (distance - 1) * 26);
-    panel.style.transform = `translateY(calc(-50% + ${shift}%)) rotateX(${-offset * 24}deg) scale(${Math.max(0.6, 1 - distance * 0.15)})`;
+    const shift = Math.sign(offset) * drumOffset(distance);
+    panel.style.transform = `translateY(calc(-50% + ${shift.toFixed(1)}px)) rotateX(${-Math.sign(offset) * 16}deg) scale(${drumScale(distance)})`;
   });
 }
 function showFeature(index) {
@@ -320,6 +335,20 @@ addEventListener('resize', () => { if (!phoneLayout.matches) sizeDrum(); });
 document.fonts?.ready.then(() => { if (!phoneLayout.matches) sizeDrum(); });
 featurePanels.forEach(panel => panel.querySelector('img')?.addEventListener('load', () => { if (!phoneLayout.matches) sizeDrum(); }));
 layoutFeatures();
+
+/* Team: as many columns as fit, then evened out so the rows hold about the same number of people
+   (five people on room for four: three and two, not four and one). */
+const teamList = document.querySelector('.team-list');
+if (teamList) {
+  const balanceTeam = () => {
+    const count = teamList.children.length;
+    const gap = parseFloat(getComputedStyle(teamList).columnGap) || 0;
+    const fit = Math.max(1, Math.floor((teamList.clientWidth + gap) / (200 + gap)));
+    const rows = Math.ceil(count / fit);
+    teamList.style.setProperty('--team-cols', String(Math.ceil(count / rows)));
+  };
+  new ResizeObserver(balanceTeam).observe(teamList);
+}
 
 /* "Share" from the former About page: the system share sheet, or copy the link. */
 for (const button of document.querySelectorAll('[data-share]')) {

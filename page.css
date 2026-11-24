@@ -256,6 +256,23 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .feature-toggle[aria-expanded=true]{background:var(--raised);box-shadow:0 1px 2px rgba(0,0,0,.04),0 0 0 1px var(--line)}
 .feature-toggle[aria-expanded=true]::before{transform:scaleY(1)}
 .feature-toggle[aria-expanded=true] .feature-num{color:var(--accent)}
+/* Wider screens: the chosen entry, and the one under the pointer, grow; the rest of the list moves to make room. */
+@media(min-width:761px){
+  .feature-toggle{transition:background-color .45s var(--ease),box-shadow .45s var(--ease),padding .45s var(--ease)}
+  .feature-title{transition:font-size .45s var(--ease)}
+  .feature-brief{transition:font-size .45s var(--ease)}
+  .feature-num{transition:color .4s var(--ease),font-size .45s var(--ease)}
+  .feature-toggle[aria-expanded=true]{padding-block:22px}
+  .feature-toggle[aria-expanded=true] .feature-title{font-size:23px}
+  .feature-toggle[aria-expanded=true] .feature-brief{font-size:15.5px}
+  .feature-toggle[aria-expanded=true] .feature-num{font-size:17px}
+}
+@media(min-width:761px) and (hover:hover) and (pointer:fine){
+  .feature-toggle:hover{padding-block:22px}
+  .feature-toggle:hover .feature-title{font-size:23px}
+  .feature-toggle:hover .feature-brief{font-size:15.5px}
+  .feature-toggle:hover .feature-num{font-size:17px}
+}
 .feature-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .tile-chevron{display:none}
 .feature-panel{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--raised);overflow:hidden;box-shadow:var(--shadow-lift)}
@@ -264,7 +281,7 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .feature-drum{position:sticky;top:72px;height:var(--drum-h,760px);perspective:1500px;perspective-origin:50% 50%;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 var(--drum-fade,110px),#000 calc(100% - var(--drum-fade,110px)),transparent 100%);
           mask-image:linear-gradient(to bottom,transparent 0,#000 var(--drum-fade,110px),#000 calc(100% - var(--drum-fade,110px)),transparent 100%)}
-.feature-drum .feature-panel{position:absolute;left:0;right:0;top:50%;transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,opacity;
+.feature-drum .feature-panel{position:absolute;left:0;right:0;top:50%;height:var(--card-h,auto);transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,opacity;
   transition:transform .95s cubic-bezier(.22,.8,.24,1),opacity .95s cubic-bezier(.22,.8,.24,1),box-shadow .6s var(--ease)}
 .feature-drum .feature-panel:not(.is-current){cursor:pointer;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
 .feature-drum .feature-panel:not(.is-current) *{pointer-events:none}
@@ -273,7 +290,7 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .feature-shot{display:grid;place-items:center;height:380px;padding:26px 28px;background:var(--app-bg);border-bottom:1px solid var(--line)}
 .feature-shot img{width:auto;height:auto;max-width:100%;max-height:328px;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 0 0 1px var(--app-line);transition:transform 1.1s var(--ease)}
 @media(hover:hover) and (pointer:fine){.feature-panel:hover .feature-shot img{transform:scale(1.025)}}
-.feature-copy{display:flex;flex-direction:column;gap:10px;padding:24px 28px 26px}
+.feature-copy{display:flex;flex-direction:column;gap:10px;padding:24px 28px 26px;flex:1}
 .feature-panel-title{font:700 26px/1.25 Gaura,Georgia,serif;color:var(--ink)}
 .feature-copy p:not(.tile-kicker,.feature-panel-title){font-size:16.5px;line-height:1.55;max-width:560px}
 .feature-copy .tile-link{align-self:flex-start}
@@ -399,6 +416,7 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .about h3{font-size:22px}
 .about-team{margin-top:56px;padding-top:40px;border-top:1px solid var(--line)}
 .team-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;margin-top:20px;list-style:none;padding:0}
+.team-list[style*="--team-cols"]{grid-template-columns:repeat(var(--team-cols),minmax(0,1fr))}
 .team-list li{display:flex;flex-direction:column;gap:4px;padding-left:16px;border-left:2px solid color-mix(in srgb,var(--gold) 60%,var(--line))}
 .team-list strong{font:700 17px/1.3 Gaura,Georgia,serif;color:var(--ink)}
 .team-list span{font-size:14px;line-height:1.4;color:var(--muted)}
