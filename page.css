@@ -137,8 +137,6 @@ img{max-width:100%;height:auto;display:block}
 .app-body{padding:24px 16px 24px;font-family:'PT Sans',PT,sans-serif}
 .app-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .app-title{flex:1;font:600 27.8px/37px Gaura,Georgia,serif;color:var(--app-ink)}
-.app-title-icons{display:flex;align-items:flex-start;gap:8px;margin:2px 6px 0 0;color:var(--app-muted)}
-.app-title-icons svg{width:22px;height:22px}
 .app-meta{display:flex;flex-wrap:wrap;gap:4px 24px;margin:4px 0 0;font-size:16.2px;line-height:23.15px;color:var(--app-ink)}
 .app-meta em{font-style:normal;color:var(--app-faint)}
 .app-strip{display:flex;gap:4.63px;padding:4.63px;border-radius:8px;background:var(--app-surface)}
@@ -511,8 +509,6 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
   .app-body{padding:18px 12px 22px}
   .app-record{max-width:none}
   .app-title{font-size:23px;line-height:1.35}
-  .app-title-icons{gap:6px;margin-right:0}
-  .app-title-icons svg{width:20px;height:20px}
   .app-meta{font-size:14px;line-height:1.45;gap:2px 14px}
   .app-strip button{padding:8px 4px;font-size:14px}
   .app-slides{position:fixed;inset:0;z-index:10000}
