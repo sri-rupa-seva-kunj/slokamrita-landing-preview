@@ -230,25 +230,90 @@ function drumOffset(distance) {
   for (let d = 1; d <= distance; d++) y += cardHeight * (drumScale(d - 1) + drumScale(d)) / 2 + DRUM_GAP;
   return y;
 }
-function turnDrum() {
+// Where a card stands `offset` places from the middle of the drum, and how clearly it shows.
+function placeCard(panel, offset, opacity) {
+  const distance = Math.abs(offset);
+  const shift = Math.sign(offset) * drumOffset(distance);
+  panel.style.opacity = String(opacity ?? (distance === 0 ? 1 : distance === 1 ? 0.7 : 0));
+  panel.style.pointerEvents = distance > 1 ? 'none' : '';
+  panel.style.transform = `translateY(calc(-50% + ${shift.toFixed(1)}px)) rotateX(${-Math.sign(offset) * 16}deg) scale(${drumScale(distance)})`;
+}
+// Moves a card without animating it (it is invisible at the time).
+function teleport(panel, offset, opacity) {
+  panel.style.transition = 'none';
+  placeCard(panel, offset, opacity);
+}
+function markCurrent() {
   featurePanels.forEach((panel, i) => {
-    const offset = i - activeFeature;
-    const distance = Math.abs(offset);
-    const current = offset === 0;
+    const current = i === activeFeature;
     panel.hidden = false;
     panel.classList.toggle('is-current', current);
     panel.setAttribute('aria-hidden', String(!current));
     panel.querySelectorAll('a,button').forEach(node => { node.tabIndex = current ? 0 : -1; });
-    panel.style.opacity = distance === 0 ? '1' : distance === 1 ? '.7' : '0';
-    panel.style.pointerEvents = distance > 1 ? 'none' : '';
-    const shift = Math.sign(offset) * drumOffset(distance);
-    panel.style.transform = `translateY(calc(-50% + ${shift.toFixed(1)}px)) rotateX(${-Math.sign(offset) * 16}deg) scale(${drumScale(distance)})`;
   });
 }
+function turnDrum() {
+  markCurrent();
+  featurePanels.forEach((panel, i) => placeCard(panel, i - activeFeature));
+}
+// A jump over several entries plays like a single step: the chosen card is slipped in, unseen,
+// just past the current one's neighbour, the drum turns as if by one, and then the neighbours
+// quietly fade over to the chosen card's real ones.
+let jumpTimers = [];
+function settleDrum() {
+  jumpTimers.forEach(clearTimeout);
+  jumpTimers = [];
+  featurePanels.forEach(panel => { panel.style.transition = ''; });
+}
+function jumpDrum(from, to) {
+  const step = Math.sign(to - from);
+  const card = i => featurePanels[i];
+  const exists = i => i >= 0 && i < featurePanels.length;
+  const fadeOut = (panel, seconds) => {
+    panel.style.transition = `opacity ${seconds}s linear`;
+    panel.style.opacity = '0';
+    panel.style.pointerEvents = 'none';
+  };
+  // The chosen card waits, unseen, two places out; the current neighbour on that side steps aside quickly.
+  teleport(card(to), step * 2, 0);
+  if (exists(to + step)) teleport(card(to + step), step * 3, 0);
+  drum.getBoundingClientRect();
+  settleDrum();
+  markCurrent();
+  placeCard(card(from), -step);
+  // While the neighbour fades, the chosen card is still invisible; it shows only once that place is clear.
+  card(to).style.transition = 'transform .95s cubic-bezier(.22,.8,.24,1),opacity .8s cubic-bezier(.22,.8,.24,1) .13s';
+  placeCard(card(to), 0);
+  if (exists(to + step)) placeCard(card(to + step), step);
+  if (exists(from - step)) placeCard(card(from - step), -step * 2);
+  if (card(from + step) !== card(to)) fadeOut(card(from + step), 0.12);
+  // Then the card left behind gives its place to the chosen card's real neighbour: out first, then in.
+  jumpTimers.push(setTimeout(() => {
+    const before = card(to - step);
+    if (before !== card(from)) fadeOut(card(from), 0.25);
+    jumpTimers.push(setTimeout(() => {
+      if (before !== card(from)) {
+        teleport(before, -step, 0);
+        drum.getBoundingClientRect();
+        before.style.transition = 'opacity .3s linear';
+        placeCard(before, -step);
+      }
+      jumpTimers.push(setTimeout(() => {
+        featurePanels.forEach(panel => { panel.style.transition = 'none'; });
+        turnDrum();
+        drum.getBoundingClientRect();
+        settleDrum();
+      }, 320));
+    }, 260));
+  }, 950));
+}
 function showFeature(index) {
+  const previous = activeFeature;
   activeFeature = (index + featurePanels.length) % featurePanels.length;
   featureToggles.forEach((toggle, i) => toggle.setAttribute('aria-expanded', String(i === activeFeature)));
-  turnDrum();
+  settleDrum();
+  if (Math.abs(activeFeature - previous) > 1 && !reduceMotion.matches && cardHeight) jumpDrum(previous, activeFeature);
+  else turnDrum();
 }
 function layoutFeatures() {
   if (phoneLayout.matches) {

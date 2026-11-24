@@ -256,23 +256,6 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .feature-toggle[aria-expanded=true]{background:var(--raised);box-shadow:0 1px 2px rgba(0,0,0,.04),0 0 0 1px var(--line)}
 .feature-toggle[aria-expanded=true]::before{transform:scaleY(1)}
 .feature-toggle[aria-expanded=true] .feature-num{color:var(--accent)}
-/* Wider screens: the chosen entry, and the one under the pointer, grow; the rest of the list moves to make room. */
-@media(min-width:761px){
-  .feature-toggle{transition:background-color .45s var(--ease),box-shadow .45s var(--ease),padding .45s var(--ease)}
-  .feature-title{transition:font-size .45s var(--ease)}
-  .feature-brief{transition:font-size .45s var(--ease)}
-  .feature-num{transition:color .4s var(--ease),font-size .45s var(--ease)}
-  .feature-toggle[aria-expanded=true]{padding-block:22px}
-  .feature-toggle[aria-expanded=true] .feature-title{font-size:23px}
-  .feature-toggle[aria-expanded=true] .feature-brief{font-size:15.5px}
-  .feature-toggle[aria-expanded=true] .feature-num{font-size:17px}
-}
-@media(min-width:761px) and (hover:hover) and (pointer:fine){
-  .feature-toggle:hover{padding-block:22px}
-  .feature-toggle:hover .feature-title{font-size:23px}
-  .feature-toggle:hover .feature-brief{font-size:15.5px}
-  .feature-toggle:hover .feature-num{font-size:17px}
-}
 .feature-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .tile-chevron{display:none}
 .feature-panel{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--raised);overflow:hidden;box-shadow:var(--shadow-lift)}
@@ -443,7 +426,7 @@ html:not([data-theme=dark]) .app-record{border-color:#d8d9da}
 .closing{text-align:center;padding-block:76px;background:var(--page)}
 .closing .buttons{justify-content:center;margin-top:24px}
 .closing-lead{max-width:520px;margin:14px auto 0;font-size:18px}
-.closing .closing-stores{margin-top:12px}
+.closing .closing-stores{margin-top:26px}
 .closing-stores .button{min-height:42px;padding:9px 15px;font-size:15px}
 .closing-stores .arr{width:15px}
 .team-note{margin-top:16px;max-width:620px;font-size:16px}
