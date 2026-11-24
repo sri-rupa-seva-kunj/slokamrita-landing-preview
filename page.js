@@ -14,6 +14,7 @@ function setTheme(value) {
   if (value === 'dark') url.searchParams.set('theme', 'dark');
   else url.searchParams.delete('theme');
   otherEdition.href = url.href;
+  document.querySelector('#app-slides iframe')?.contentWindow?.postMessage({ type: 'slokamrita-slides-theme', theme: value }, '*');
 }
 setTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
 theme.addEventListener('click', () => {
@@ -36,8 +37,12 @@ const modeButtons = [...app.querySelectorAll('[data-mode]')];
 const scope = app.querySelector('.word-links-scope');
 const hint = app.querySelector('[data-hint-wbw]');
 
+let shownTab = 'verse';
 function showTab(name) {
   for (const tab of tabs) tab.setAttribute('aria-selected', String(tab.dataset.tab === name));
+  if (name === 'slides') { openSlides(); return; }
+  shownTab = name;
+  closeSlides();
   for (const panel of panels) panel.hidden = panel.dataset.panel !== name;
 }
 function setModes(modes) {
@@ -91,69 +96,51 @@ function paintWord(key) { if (!key) readingLinks.reset(); }
 scope.querySelectorAll('.word-link-source[data-word-link]').forEach(node => { node.tabIndex = 0; });
 setModes(currentModes());
 
-/* Slides tab: a working slide-show viewer. The verse is a copy of the reading block;
-   the rail sets what is shown, hides the title, and expands the slide to full screen. */
-const slide = app.querySelector('[data-slide]');
-const slideSurface = app.querySelector('#app-reading-content').cloneNode(true);
-slideSurface.removeAttribute('id');
-const slideScope = slideSurface.querySelector('.word-links-scope');
-slide.querySelector('[data-slide-body]').append(slideSurface);
-const settingsButton = slide.querySelector('[data-slide-settings]');
-const slideMenu = slide.querySelector('.slide-menu');
-const slideModes = [...slide.querySelectorAll('[data-slide-mode]')];
-function setSlideModes() {
-  const modes = slideModes.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.slideMode);
-  slide.dataset.modes = modes.join(' ');
-  const linked = modes.includes('wordByWord') && modes.includes('sanskrit');
-  slideScope.dataset.wordLinks = linked ? 'on' : 'off';
-  slideScope.querySelectorAll('.word-link-source[data-word-link]').forEach(node => { node.tabIndex = linked ? 0 : -1; });
+/* Slides tab: Slokamrita's own slide-show viewer (slideshow/viewer.html, copied from the app),
+   opened over the window as the app opens it over the verse page, and fed the same init message. */
+const slidesBox = app.querySelector('#app-slides');
+const slidesFrame = slidesBox.querySelector('iframe');
+let slidesLoaded = false;
+const slidesInit = () => ({
+  type: 'slokamrita-slides-init',
+  samples: [window.SLOKAMRITA_SLIDES[en ? 'en' : 'ru']],
+  initialIndex: 0,
+  locale: en ? 'en' : 'ru',
+  theme: root.dataset.theme === 'dark' ? 'dark' : 'light',
+  native: false,
+  visible: { sanskrit: true, interlinear: false, word: true, literary: true },
+  icons: window.SLOKAMRITA_SLIDES.icons,
+});
+const postSlides = message => slidesFrame.contentWindow?.postMessage(message, '*');
+function openSlides() {
+  if (!slidesBox.hidden) return;
+  slidesBox.hidden = false;
+  root.classList.add('slides-open');
+  if (!slidesLoaded) { slidesLoaded = true; slidesFrame.src = slidesFrame.dataset.src; }
+  else postSlides(slidesInit());
+  slidesFrame.focus({ preventScroll: true });
 }
-const slideLinks = wireWordLinks(slideScope);
-setSlideModes();
-function openMenu(open, focus) {
-  settingsButton.setAttribute('aria-expanded', String(open));
-  slideMenu.hidden = !open;
-  if (open && focus) slideModes[0].focus({ preventScroll: true });
+function closeSlides() {
+  if (slidesBox.hidden) return;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  slidesBox.hidden = true;
+  root.classList.remove('slides-open');
 }
-settingsButton.addEventListener('click', event => openMenu(slideMenu.hidden, event.detail === 0));
-slideModes.forEach((button, index) => {
-  button.addEventListener('click', () => {
-    button.setAttribute('aria-checked', String(button.getAttribute('aria-checked') !== 'true'));
-    slideLinks.reset();
-    setSlideModes();
-  });
-  button.addEventListener('keydown', event => {
-    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
-    if (step) { event.preventDefault(); slideModes[(index + step + slideModes.length) % slideModes.length].focus(); }
-    if (event.key === 'Escape') { openMenu(false); settingsButton.focus(); }
-  });
+addEventListener('message', event => {
+  if (event.source !== slidesFrame.contentWindow || !event.data || typeof event.data !== 'object') return;
+  const { type } = event.data;
+  if (type === 'slokamrita-slides-ready') postSlides(slidesInit());
+  if (type === 'slokamrita-slides-close') { showTab(shownTab); tabs.find(tab => tab.dataset.tab === shownTab)?.focus({ preventScroll: true }); }
 });
-document.addEventListener('pointerdown', event => { if (!slideMenu.hidden && !event.target.closest('.slide-settings')) openMenu(false); });
-const fullButton = slide.querySelector('[data-slide-full]');
-if (!slide.requestFullscreen) fullButton.hidden = true;
-fullButton.addEventListener('click', () => {
-  if (document.fullscreenElement) document.exitFullscreen();
-  else slide.requestFullscreen?.().catch(() => {});
-});
-document.addEventListener('fullscreenchange', () => {
-  const full = document.fullscreenElement === slide;
-  fullButton.children[0].hidden = full;
-  fullButton.children[1].hidden = !full;
-  const label = full ? fullButton.dataset.labelExit : fullButton.dataset.labelEnter;
-  fullButton.setAttribute('aria-label', label);
-  fullButton.title = label;
-});
-const chromeButton = slide.querySelector('[data-slide-chrome]');
-const chromeLabels = en ? ['Hide the title', 'Show the title'] : ['Скрыть название', 'Показать название'];
-chromeButton.addEventListener('click', () => {
-  const hide = chromeButton.getAttribute('aria-pressed') !== 'true';
-  chromeButton.setAttribute('aria-pressed', String(hide));
-  slide.dataset.chrome = hide ? 'hidden' : 'shown';
-  chromeButton.children[0].hidden = hide;
-  chromeButton.children[1].hidden = !hide;
-  chromeButton.setAttribute('aria-label', chromeLabels[hide ? 1 : 0]);
-  chromeButton.title = chromeLabels[hide ? 1 : 0];
-});
+// The viewer's full-screen button fills the screen with this page, so the viewer then covers it all.
+document.addEventListener('fullscreenchange', () => slidesBox.classList.toggle('is-fullscreen', document.fullscreenElement === root && !slidesBox.hidden));
+
+/* Materials: Recordings and Comments, as in the app. */
+const subtabs = [...app.querySelectorAll('[data-subtab]')];
+subtabs.forEach(button => button.addEventListener('click', () => {
+  for (const other of subtabs) other.setAttribute('aria-pressed', String(other === button));
+  app.querySelectorAll('[data-subpanel]').forEach(panel => { panel.hidden = panel.dataset.subpanel !== button.dataset.subtab; });
+}));
 
 /* Recording card player, styled after the Materials tab. */
 const audio = document.querySelector('#recitation');
@@ -211,56 +198,59 @@ document.querySelectorAll('[data-demo]').forEach(link => link.addEventListener('
   app.classList.add('app-window-flash');
 }));
 
-/* Features: on wider screens a list beside one detail card, switched as a vertical carousel
-   (the old card shrinks and fades out, the new one grows in from the direction of travel);
-   on phones every entry is a collapsed row with its title and a short line, opened in place. */
+/* Features: on wider screens a list beside a drum of detail cards. The chosen card faces the reader;
+   its neighbours stay in sight above and below, smaller and turned away, and fade out through
+   the soft edges of the window. On phones every entry is a collapsed row opened in place. */
 const phoneLayout = matchMedia('(max-width: 760px)');
 const explorer = document.querySelector('[data-feature-explorer]');
+const drum = document.querySelector('[data-feature-drum]');
 const featureToggles = [...explorer.querySelectorAll('.feature-toggle')];
 const panelOf = toggle => document.getElementById(toggle.getAttribute('aria-controls'));
+const featurePanels = featureToggles.map(panelOf);
 let activeFeature = 0;
-const leaveTimers = new Map();
-function finishLeaving(panel) {
-  clearTimeout(leaveTimers.get(panel));
-  leaveTimers.delete(panel);
-  panel.classList.remove('is-leaving');
-  if (!panel.classList.contains('is-current')) panel.hidden = true;
+function sizeDrum() {
+  const tallest = Math.max(...featurePanels.map(panel => panel.offsetHeight));
+  const peek = Math.round(Math.min(130, Math.max(80, innerHeight * 0.12)));
+  drum.style.setProperty('--drum-h', tallest + peek * 2 + 'px');
+  drum.style.setProperty('--drum-fade', peek + 'px');
 }
-function showFeature(index, animate) {
-  const previous = activeFeature;
-  activeFeature = index;
-  featureToggles.forEach((toggle, i) => {
-    toggle.setAttribute('aria-expanded', String(i === index));
-    panelOf(toggle).classList.toggle('is-current', i === index);
+function turnDrum() {
+  featurePanels.forEach((panel, i) => {
+    const offset = i - activeFeature;
+    const distance = Math.abs(offset);
+    const current = offset === 0;
+    panel.hidden = false;
+    panel.classList.toggle('is-current', current);
+    panel.setAttribute('aria-hidden', String(!current));
+    panel.querySelectorAll('a,button').forEach(node => { node.tabIndex = current ? 0 : -1; });
+    panel.style.zIndex = String(10 - distance);
+    panel.style.opacity = distance === 0 ? '1' : distance === 1 ? '.62' : '0';
+    panel.style.pointerEvents = distance > 1 ? 'none' : '';
+    const shift = Math.sign(offset) * (distance === 0 ? 0 : 62 + (distance - 1) * 26);
+    panel.style.transform = `translateY(calc(-50% + ${shift}%)) rotateX(${-offset * 24}deg) scale(${Math.max(0.6, 1 - distance * 0.15)})`;
   });
-  if (!animate || previous === index || reduceMotion.matches) {
-    featureToggles.forEach((toggle, i) => { const panel = panelOf(toggle); clearTimeout(leaveTimers.get(panel)); panel.classList.remove('is-entering', 'is-leaving'); panel.hidden = i !== index; });
-    return;
-  }
-  // Cards still leaving from an earlier switch disappear at once.
-  featureToggles.forEach((toggle, i) => { const panel = panelOf(toggle); if (i !== index && i !== previous && !panel.hidden) finishLeaving(panel); });
-  explorer.style.setProperty('--dir', index > previous ? '1' : '-1');
-  const outgoing = panelOf(featureToggles[previous]);
-  outgoing.classList.add('is-leaving');
-  clearTimeout(leaveTimers.get(outgoing));
-  leaveTimers.set(outgoing, setTimeout(() => finishLeaving(outgoing), 750));
-  const incoming = panelOf(featureToggles[index]);
-  clearTimeout(leaveTimers.get(incoming));
-  incoming.classList.remove('is-leaving');
-  incoming.classList.add('is-entering');
-  incoming.hidden = false;
-  void incoming.offsetWidth;
-  incoming.classList.remove('is-entering');
+}
+function showFeature(index) {
+  activeFeature = (index + featurePanels.length) % featurePanels.length;
+  featureToggles.forEach((toggle, i) => toggle.setAttribute('aria-expanded', String(i === activeFeature)));
+  turnDrum();
 }
 function layoutFeatures() {
   if (phoneLayout.matches) {
-    featureToggles.forEach(toggle => {
-      const panel = panelOf(toggle);
-      toggle.setAttribute('aria-expanded', 'false');
+    featurePanels.forEach((panel, i) => {
+      featureToggles[i].closest('li').append(panel);
+      featureToggles[i].setAttribute('aria-expanded', 'false');
       panel.hidden = true;
-      panel.classList.remove('is-entering', 'is-leaving', 'is-current');
+      panel.classList.remove('is-current');
+      panel.removeAttribute('aria-hidden');
+      panel.removeAttribute('style');
+      panel.querySelectorAll('a,button').forEach(node => node.removeAttribute('tabindex'));
     });
-  } else showFeature(activeFeature, false);
+  } else {
+    featurePanels.forEach(panel => { panel.hidden = false; drum.append(panel); });
+    sizeDrum();
+    showFeature(activeFeature);
+  }
 }
 featureToggles.forEach((toggle, index) => {
   toggle.addEventListener('click', () => {
@@ -268,7 +258,7 @@ featureToggles.forEach((toggle, index) => {
       const open = toggle.getAttribute('aria-expanded') !== 'true';
       toggle.setAttribute('aria-expanded', String(open));
       panelOf(toggle).hidden = !open;
-    } else showFeature(index, true);
+    } else showFeature(index);
   });
   toggle.addEventListener('keydown', event => {
     if (phoneLayout.matches) return;
@@ -277,10 +267,20 @@ featureToggles.forEach((toggle, index) => {
     event.preventDefault();
     const next = (index + step + featureToggles.length) % featureToggles.length;
     featureToggles[next].focus();
-    showFeature(next, true);
+    showFeature(next);
   });
 });
+// A neighbour card peeking out of the drum turns it to that card.
+drum.addEventListener('click', event => {
+  const panel = event.target.closest('.feature-panel');
+  if (!panel || panel.classList.contains('is-current')) return;
+  event.preventDefault();
+  showFeature(featurePanels.indexOf(panel));
+});
 phoneLayout.addEventListener('change', layoutFeatures);
+addEventListener('resize', () => { if (!phoneLayout.matches) sizeDrum(); });
+document.fonts?.ready.then(() => { if (!phoneLayout.matches) sizeDrum(); });
+featurePanels.forEach(panel => panel.querySelector('img')?.addEventListener('load', () => { if (!phoneLayout.matches) sizeDrum(); }));
 layoutFeatures();
 
 /* "Share" from the former About page: the system share sheet, or copy the link. */

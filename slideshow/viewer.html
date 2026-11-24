@@ -1,0 +1,547 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Slokamrita Slides</title><link rel="stylesheet" href="word-links.css?v=20261021"><script src="word-links.js?v=20261021"></script></head><body><style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}button{cursor:pointer}button:focus,button:focus-visible{outline:none;box-shadow:none}
+@font-face{font-family:'Gaura PT Serif';src:url(Gaura-Regular.woff2) format('woff2');font-weight:400;font-display:block}
+@font-face{font-family:'Gaura PT Serif';src:url(Gaura-Bold.woff2) format('woff2');font-weight:500;font-display:block}
+@font-face{font-family:'Vedarama Serif';src:url(../fonts/vedarama-serif/VedaramaSerif-Regular.woff2?v=1.008) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Vedarama Serif';src:url(../fonts/vedarama-serif/VedaramaSerif-Italic.woff2?v=1.008) format('woff2');font-weight:400;font-style:italic;font-display:block}
+@font-face{font-family:'PT Sans';src:url(PTSans-Regular.woff2) format('woff2');font-weight:400;font-display:block}
+@font-face{font-family:'Noto Sans Devanagari';src:url(NotoSansDevanagari-Regular.woff2) format('woff2');font-weight:400;font-display:block}
+#sloka-slide-prototype{--ss-bg:light-dark(#fefefe,#1f2023);--ss-fg:light-dark(#292929,#f5f5f5);--ss-muted:light-dark(#777,#aaa);--ss-sanskrit:light-dark(#b78a54,#efc869);--ss-guru:light-dark(#89673f,#fceecd);--ss-rule:light-dark(#e4e4e4,#383b40);--ss-hover:light-dark(#f1eee9,#303031);color-scheme:light dark;background:var(--ss-bg);color:var(--ss-fg);width:100%;aspect-ratio:16/10;min-height:430px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) 86px;grid-template-rows:36px minmax(0,1fr) 32px;gap:0 8px;padding:18px 16px 14px 26px;font-family:Arial,sans-serif;letter-spacing:0;overflow:hidden}
+#sloka-slide-prototype *{box-sizing:border-box;letter-spacing:0}
+#sloka-slide-prototype:fullscreen{width:100%;height:100%;min-height:0;aspect-ratio:auto}
+#sloka-slide-prototype .ss-heading{min-width:0;width:100%;margin:0 0 .6em;font-family:'Gaura PT Serif',Georgia,serif;font-size:.625em;font-weight:500;line-height:1.25;color:var(--ss-fg);text-align:center;white-space:normal;overflow-wrap:anywhere;text-wrap:balance}
+#sloka-slide-prototype .ss-reading-area{grid-column:1;grid-row:2;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 2px 6px 0}
+#sloka-slide-prototype .ss-content{width:100%;font-family:var(--ss-font-primary);font-weight:400;font-size:var(--ss-size,36px);line-height:1.375;text-align:center;overflow-wrap:normal;word-break:normal;hyphens:none;display:flex;flex-direction:column;gap:0}
+#sloka-slide-prototype .ss-sanskrit{width:max-content;max-width:100%;margin-inline:auto;text-align:left;font-style:italic}
+#sloka-slide-prototype .ss-pada{color:var(--ss-sanskrit);margin:0;padding:.111em .444em;line-height:1.375;display:flex;justify-content:flex-start;align-items:flex-end;flex-wrap:wrap;gap:0 .3em;min-width:0}
+#sloka-slide-prototype .ss-sanskrit[data-interlinear=true] .ss-pada{padding-block:.222em;line-height:1.625}
+#sloka-slide-prototype .ss-word{display:inline-block;white-space:nowrap;max-width:100%;text-align:left}
+#sloka-slide-prototype .ss-token{display:inline-block;white-space:nowrap;flex-shrink:0}
+#sloka-slide-prototype .ss-gloss{display:block;font-family:var(--ss-font-primary);font-style:normal;font-size:.666667em;line-height:1.25;font-weight:400;color:var(--ss-muted);white-space:nowrap}
+#sloka-slide-prototype .ss-guru{color:var(--ss-guru)}
+#sloka-slide-prototype .ss-review{text-decoration:none}
+#sloka-slide-prototype .ss-literary,#sloka-slide-prototype .ss-dictionary{margin:0;width:100%;white-space:normal;font-family:var(--ss-font-primary);font-size:.888889em;line-height:1.625;text-align:left;color:var(--ss-muted)}
+#sloka-slide-prototype .ss-sanskrit~.ss-literary,#sloka-slide-prototype .ss-dictionary~.ss-literary,#sloka-slide-prototype .ss-sanskrit~.ss-dictionary{margin-top:.455em;padding-top:.455em;border-top:2px solid var(--ss-rule)}
+#sloka-slide-prototype[data-appearance=dark] .ss-sanskrit~.ss-literary,#sloka-slide-prototype[data-appearance=dark] .ss-dictionary~.ss-literary,#sloka-slide-prototype[data-appearance=dark] .ss-sanskrit~.ss-dictionary{border-top-width:1px}
+#sloka-slide-prototype .ss-dictionary b{font-family:var(--ss-font-primary);font-style:italic;font-weight:400;color:var(--ss-sanskrit);font-size:1.125em}
+#sloka-slide-prototype .ss-rail{grid-column:2;grid-row:1/4;display:flex;flex-direction:column;align-items:flex-end;min-height:0;gap:10px;padding-top:0}
+#sloka-slide-prototype .ss-tools{display:grid;grid-template-columns:36px;grid-auto-rows:max-content;width:44px;gap:6px;align-items:start;min-height:0;flex:0 1 auto;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;padding-right:4px}
+#sloka-slide-prototype button{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;padding:7px;background:transparent;color:var(--ss-muted);border:1px solid transparent;border-radius:6px;transition:background .16s,color .16s;font:inherit;-webkit-tap-highlight-color:transparent}
+#sloka-slide-prototype button>span,#sloka-slide-prototype button>svg{opacity:.48;transition:opacity .16s ease}
+#sloka-slide-prototype button[aria-pressed=true]>span,#sloka-slide-prototype button[aria-pressed=true]>svg,#sloka-slide-prototype button[aria-expanded=true]>span,#sloka-slide-prototype button[aria-expanded=true]>svg{opacity:1}
+@media(hover:hover) and (pointer:fine){#sloka-slide-prototype button:hover{background:var(--ss-hover);color:color-mix(in srgb,var(--ss-muted) 80%,var(--ss-bg))}#sloka-slide-prototype button:hover>span,#sloka-slide-prototype button:hover>svg{opacity:1}}
+#sloka-slide-prototype button[aria-pressed=true],#sloka-slide-prototype button[aria-expanded=true]{color:var(--ss-sanskrit);background:var(--ss-hover);border-color:color-mix(in srgb,var(--ss-sanskrit) 30%,transparent)}
+#sloka-slide-prototype button:disabled{opacity:.3}
+#sloka-slide-prototype button svg{display:block;flex:none;width:20px;height:20px;stroke-width:1.5}
+#sloka-slide-prototype .ss-icon-maximize,#sloka-slide-prototype .ss-icon-minimize,#sloka-slide-prototype .ss-icon-hide,#sloka-slide-prototype .ss-icon-show{display:inline-flex;align-items:center;justify-content:center;flex:none;width:20px;height:20px;line-height:0}
+#sloka-slide-prototype:not([data-ready=true]){visibility:hidden}
+#sloka-slide-prototype .ss-status{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);z-index:4;max-width:calc(100% - 120px);padding:8px 12px;background:var(--ss-bg);color:var(--ss-fg);font:14px/1.4 var(--ss-font-secondary);text-align:center}
+#sloka-slide-prototype .ss-options{grid-column:2;display:grid;grid-template-rows:0fr;opacity:0;transform:translateY(-6px);transition:grid-template-rows .22s ease,opacity .18s ease,transform .22s ease}
+#sloka-slide-prototype .ss-options[data-open=true]{grid-template-rows:1fr;opacity:1;transform:translateY(0)}
+#sloka-slide-prototype .ss-options-inner{min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:6px}
+#sloka-slide-prototype .ss-navigation{margin-top:auto;display:grid;grid-template-columns:36px 36px;gap:6px}
+#sloka-slide-prototype .ss-counter{grid-column:1;grid-row:3;display:flex;align-items:flex-end;color:var(--ss-muted);font-size:12px;font-variant-numeric:tabular-nums}
+#sloka-slide-prototype[data-title=hidden] .ss-heading{visibility:hidden}
+#sloka-slide-prototype[data-title=hidden]{grid-template-rows:0 minmax(0,1fr) 24px}
+@media(max-width:600px){#sloka-slide-prototype{aspect-ratio:3/4;min-height:480px;grid-template-columns:minmax(0,1fr) 76px;padding:14px 10px 12px 16px;gap:0 2px}}
+@media(prefers-reduced-motion:reduce){#sloka-slide-prototype .ss-options,#sloka-slide-prototype button{transition:none}}
+#sloka-slide-prototype{max-height:100dvh;min-height:min(430px,100dvh)}
+#sloka-slide-prototype,#sloka-slide-prototype[data-title=hidden]{position:relative;grid-template-columns:44px minmax(0,1fr) 44px;grid-template-rows:0 minmax(0,1fr) 40px;gap:0 8px;padding-left:16px}
+#sloka-slide-prototype .ss-reading-area{grid-column:2;grid-row:2;padding:0}
+#sloka-slide-prototype .ss-rail{grid-area:1/3/4/4;position:relative;width:44px;z-index:10;pointer-events:auto;justify-self:end}
+#sloka-slide-prototype .ss-tools,#sloka-slide-prototype .ss-navigation{pointer-events:auto}
+#sloka-slide-prototype .ss-counter{grid-area:3/1;position:static;z-index:2;pointer-events:none}
+#sloka-slide-prototype[data-chrome=hidden]{grid-template-rows:0 minmax(0,1fr) 0}
+#sloka-slide-prototype[data-chrome=hidden] .ss-heading,#sloka-slide-prototype[data-chrome=hidden] .ss-counter,#sloka-slide-prototype[data-chrome=hidden] .ss-navigation{display:none}
+#sloka-slide-prototype [data-action=close]{grid-column:1;grid-row:1}
+#sloka-slide-prototype [data-action=chrome]{grid-column:1;grid-row:5}
+#sloka-slide-prototype [data-action=fullscreen]{grid-column:1;grid-row:4}
+#sloka-slide-prototype[data-native=true] [data-action=fullscreen]{display:none}
+#sloka-slide-prototype[data-native=true] [data-action=chrome]{grid-row:4}
+#sloka-slide-prototype[data-native=true]{padding-top:calc(var(--ss-safe-top,0px) + 18px);padding-right:calc(var(--ss-safe-right,0px) + 16px);padding-bottom:calc(var(--ss-safe-bottom,0px) + 14px);padding-left:calc(var(--ss-safe-left,0px) + 16px)}
+@media(max-width:600px){#sloka-slide-prototype[data-native=true]{padding-top:calc(var(--ss-safe-top,0px) + 14px);padding-right:calc(var(--ss-safe-right,0px) + 12px);padding-bottom:calc(var(--ss-safe-bottom,0px) + 12px);padding-left:calc(var(--ss-safe-left,0px) + 12px)}}
+#sloka-slide-prototype [data-action=options]{grid-column:1;grid-row:2}
+#sloka-slide-prototype .ss-options{grid-column:1;grid-row:3}
+#sloka-slide-prototype .ss-icon-minimize,#sloka-slide-prototype .ss-icon-show{display:none}
+#sloka-slide-prototype[data-fullscreen=true] .ss-icon-maximize,#sloka-slide-prototype[data-chrome=hidden] .ss-icon-hide{display:none}
+#sloka-slide-prototype[data-fullscreen=true] .ss-icon-minimize,#sloka-slide-prototype[data-chrome=hidden] .ss-icon-show{display:inline-flex}
+@media(max-width:600px){#sloka-slide-prototype,#sloka-slide-prototype[data-title=hidden]{grid-template-columns:40px minmax(0,1fr) 40px;grid-template-rows:0 minmax(0,1fr) 40px;gap:0 4px;padding-inline:12px}#sloka-slide-prototype .ss-tools{margin-top:0}#sloka-slide-prototype[data-chrome=hidden]{grid-template-rows:0 minmax(0,1fr) 0}}
+#sloka-slide-prototype{touch-action:pan-y pinch-zoom}
+#sloka-slide-prototype .ss-reading-area{touch-action:pinch-zoom}
+#sloka-slide-prototype{--ss-font-primary:'Vedarama Serif','Noto Serif','PT Serif',Georgia,serif;--ss-font-secondary:'PT Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-family:var(--ss-font-secondary)}
+#sloka-slide-prototype{--ss-bg:light-dark(#F0F1F0,#1f2023);--ss-fg:light-dark(#1f2023,#fefefe);--ss-muted:light-dark(#565759,#a9aaad);--ss-rule:light-dark(#d8d9da,#3a3c40);--ss-hover:light-dark(#ffffff,#27282b)}
+@media(max-width:767px){#sloka-slide-prototype .ss-pada{justify-content:flex-start}#sloka-slide-prototype .ss-pada:nth-child(odd){background:light-dark(#ededee,#27282b);border-radius:4px}#sloka-slide-prototype .ss-literary,#sloka-slide-prototype .ss-dictionary{text-align:left}}
+#sloka-slide-prototype .ss-symbol{display:flex;flex:none;align-items:center;justify-content:center;width:24px;height:24px;font-family:'Noto Sans Devanagari',sans-serif;font-size:17px;line-height:24px;color:inherit}
+#sloka-slide-prototype .ss-symbol-interlinear{flex-direction:column;gap:2px}
+#sloka-slide-prototype .ss-symbol-interlinear .ss-meaning{display:flex;width:20px;height:2px;gap:3px}
+#sloka-slide-prototype .ss-symbol-interlinear .ss-meaning::before,#sloka-slide-prototype .ss-symbol-interlinear .ss-meaning::after{content:'';height:2px;flex:1;background:currentColor;border-radius:1px}
+#sloka-slide-prototype .ss-symbol-interlinear .ss-original{display:block;height:18px;font:16px/20px 'Noto Sans Devanagari',sans-serif;color:inherit;opacity:.6}
+#sloka-slide-prototype .ss-flow{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(3,.12em);align-content:center;align-items:center;width:1.42em;height:1.12em;gap:.24em .04em}
+#sloka-slide-prototype .ss-pair{display:inline-flex;align-items:center;gap:.059em;width:100%;height:.12em;grid-column:1/span 7;grid-row:1}
+#sloka-slide-prototype .ss-pair:nth-child(2){display:contents}
+#sloka-slide-prototype .ss-pair:nth-child(2)::before{grid-column:10/span 2;grid-row:1;width:100%}
+#sloka-slide-prototype .ss-pair:nth-child(2)::after{grid-column:1/span 4;grid-row:2}
+#sloka-slide-prototype .ss-pair:nth-child(3){grid-column:6/span 7;grid-row:2}
+#sloka-slide-prototype .ss-pair:nth-child(4){grid-column:1/span 5;grid-row:3}
+#sloka-slide-prototype .ss-pair:nth-child(5){grid-column:7/span 6;grid-row:3}
+#sloka-slide-prototype .ss-pair::before{content:'';display:block;width:.18em;height:100%;flex:none;background:currentColor;opacity:.6;border-radius:.06em}
+#sloka-slide-prototype .ss-pair::after{content:'';display:block;height:100%;flex:1;background:currentColor;border-radius:.06em}
+#sloka-slide-prototype .ss-paragraph{display:flex;flex-direction:column;justify-content:center;gap:.19em;width:1.42em;height:1.12em}
+#sloka-slide-prototype .ss-line{display:block;flex:none;width:100%;height:.12em;background:currentColor;border-radius:.06em}
+#sloka-slide-prototype .ss-line:last-child{width:64%}
+#sloka-slide-prototype{isolation:isolate}
+#sloka-slide-prototype::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background-image:url(parchment.webp);background-repeat:no-repeat;background-size:cover;background-position:center;mix-blend-mode:multiply;opacity:var(--ss-paper-opacity,.85)}
+#sloka-slide-prototype .ss-corner{position:absolute;width:min(180px,24%,30%);aspect-ratio:1;z-index:0;pointer-events:none;background:var(--ss-corner-image) top left/contain no-repeat;opacity:var(--ss-paper-opacity,.85)}
+#sloka-slide-prototype .ss-corner-top{top:0;left:0}
+#sloka-slide-prototype .ss-corner-bottom{bottom:0;right:0;transform:rotate(180deg)}
+#sloka-slide-prototype[data-appearance=dark] .ss-corner{opacity:calc(var(--ss-paper-opacity,.85)*.22)}
+#sloka-slide-prototype .ss-pada:nth-child(odd){background:transparent}
+#sloka-slide-prototype[data-appearance=dark]::before{filter:invert(1);mix-blend-mode:screen;opacity:calc(var(--ss-paper-opacity,.5)*.5)}
+#sloka-slide-prototype .ss-reading-area{position:relative;z-index:1}
+#sloka-slide-prototype .ss-motion-stage{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+#sloka-slide-prototype .ss-motion-slide{position:absolute;inset:0;pointer-events:none;will-change:transform}
+#sloka-slide-prototype[data-moving=true]>.ss-reading-area{visibility:hidden}
+#sloka-slide-prototype .ss-gesture-surface{position:absolute;inset:0;z-index:0;touch-action:pinch-zoom}
+#sloka-slide-prototype[data-mobile=true] .ss-rail,#sloka-slide-prototype[data-mobile=true] .ss-tools,#sloka-slide-prototype[data-mobile=true] .ss-navigation{pointer-events:none}
+#sloka-slide-prototype[data-mobile=true] .ss-tools button,#sloka-slide-prototype[data-mobile=true] .ss-navigation button,#sloka-slide-prototype[data-mobile=true] .ss-tools[data-scrollable=true]{pointer-events:auto}
+#sloka-slide-prototype[data-mobile=true]{grid-template-columns:minmax(0,1fr) 36px;column-gap:4px;padding-left:calc(var(--ss-safe-left,0px) + 8px);padding-right:calc(var(--ss-safe-right,0px) + 4px)}
+#sloka-slide-prototype[data-mobile=true] .ss-reading-area{grid-column:1}
+#sloka-slide-prototype[data-mobile=true] .ss-rail{grid-area:1/2/4/3;width:36px}
+#sloka-slide-prototype[data-mobile=true] .ss-tools{width:36px;padding-right:0}
+#sloka-slide-prototype[data-mobile=true] .ss-pada{padding-inline:.15em}
+@media(pointer:coarse){#sloka-slide-prototype .ss-reading-area{user-select:none;-webkit-user-select:none}}
+#sloka-slide-prototype,#sloka-slide-prototype[data-title=hidden]{height:100dvh;max-height:none;min-height:0;aspect-ratio:auto}
+#sloka-slide-prototype .ss-pada{flex-wrap:nowrap}
+#sloka-slide-prototype .ss-reopen{display:none}
+#sloka-slide-prototype[data-view=reader]{display:block;aspect-ratio:auto;min-height:240px;max-height:100dvh;overflow:auto;padding:24px}
+#sloka-slide-prototype[data-view=reader] .ss-heading{display:block;visibility:visible;position:relative;margin:0 48px 1em 0;width:calc(100% - 48px);max-width:none;font-size:1.333333em;line-height:1.375}
+#sloka-slide-prototype[data-view=reader] .ss-reading-area{display:block;overflow:visible}
+#sloka-slide-prototype[data-view=reader] .ss-content{font-size:18px!important}
+#sloka-slide-prototype[data-view=reader] .ss-rail,#sloka-slide-prototype[data-view=reader] .ss-counter{display:none}
+#sloka-slide-prototype[data-view=reader] .ss-reopen{display:inline-flex;position:absolute;top:24px;right:24px;z-index:3}
+</style>
+<section id="sloka-slide-prototype" class="word-links-scope" aria-label="Слайд-шоу Шлокамриты" style="--ss-corner-image:url(corner.png)">
+  <div class="ss-corner ss-corner-top" aria-hidden="true"></div>
+  <div class="ss-corner ss-corner-bottom" aria-hidden="true"></div>
+  <div class="ss-gesture-surface" aria-hidden="true"></div>
+  <main class="ss-reading-area" aria-label="Текст стиха"><div class="ss-content"></div></main>
+  <aside class="ss-rail" aria-label="Управление слайд-шоу">
+    <div class="ss-tools">
+      <button type="button" class="cursor-interaction" data-action="close" aria-label="Закрыть слайд-шоу" title="Закрыть слайд-шоу" data-tooltip-placement="left"><i data-lucide="x" aria-hidden="true"></i></button>
+      <button type="button" class="cursor-interaction" data-action="fullscreen" aria-label="Развернуть на весь экран" title="Развернуть на весь экран" data-tooltip-placement="left"><span class="ss-icon-maximize" aria-hidden="true"><i data-lucide="maximize"></i></span><span class="ss-icon-minimize" aria-hidden="true"><i data-lucide="minimize"></i></span></button>
+      <button type="button" class="cursor-interaction" data-action="options" aria-label="Режим отображения" aria-expanded="false" aria-controls="sloka-slide-options" title="Режим отображения" data-tooltip-placement="left"><i data-lucide="settings" aria-hidden="true"></i></button>
+      <button type="button" class="cursor-interaction" data-action="chrome" aria-label="Скрыть название и навигацию" aria-pressed="false" title="Скрыть название и навигацию" data-tooltip-placement="left"><span class="ss-icon-hide" aria-hidden="true"><i data-lucide="eye-off"></i></span><span class="ss-icon-show" aria-hidden="true"><i data-lucide="eye"></i></span></button>
+      <div id="sloka-slide-options" class="ss-options" data-open="false" aria-hidden="true" inert>
+        <div class="ss-options-inner" role="group" aria-label="Режимы отображения">
+          <button type="button" class="cursor-interaction" data-mode="sanskrit" aria-label="Санскрит" aria-pressed="true" title="Санскрит" data-tooltip-placement="left"><span class="ss-symbol" lang="sa" aria-hidden="true">सं</span></button>
+          <button type="button" class="cursor-interaction" data-mode="interlinear" aria-label="Надстрочный перевод" aria-pressed="true" title="Надстрочный перевод" data-tooltip-placement="left"><span class="ss-symbol ss-symbol-interlinear" aria-hidden="true"><span class="ss-meaning"></span><span class="ss-original" lang="sa">सं</span></span></button>
+          <button type="button" class="cursor-interaction" data-mode="word" aria-label="Пословный перевод" aria-pressed="false" title="Пословный перевод" data-tooltip-placement="left"><span class="ss-symbol" aria-hidden="true"><span class="ss-flow"><span class="ss-pair"></span><span class="ss-pair"></span><span class="ss-pair"></span><span class="ss-pair"></span><span class="ss-pair"></span></span></span></button>
+          <button type="button" class="cursor-interaction" data-mode="literary" aria-label="Литературный перевод" aria-pressed="false" title="Литературный перевод" data-tooltip-placement="left"><span class="ss-symbol" aria-hidden="true"><span class="ss-paragraph"><span class="ss-line"></span><span class="ss-line"></span><span class="ss-line"></span><span class="ss-line"></span></span></span></button>
+        </div>
+      </div>
+    </div>
+    <nav class="ss-navigation" aria-label="Навигация по стихам">
+      <button type="button" class="cursor-interaction" data-action="previous" aria-label="Предыдущий стих" title="Предыдущий стих"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+      <button type="button" class="cursor-interaction" data-action="next" aria-label="Следующий стих" title="Следующий стих"><i data-lucide="chevron-right" aria-hidden="true"></i></button>
+    </nav>
+  </aside>
+  <div class="ss-counter" aria-live="polite"></div>
+</section>
+<script>
+(() => {
+  const root = document.getElementById('sloka-slide-prototype');
+  const wordLinks = SlokamritaWordLinks.bindWordLinks(root,{enabled:false});
+  window.addEventListener('pagehide',()=>wordLinks.destroy(),{once:true});
+  const fullscreenHost = window.frameElement ? window.frameElement.ownerDocument.documentElement : root;
+  const fullscreenDocument = fullscreenHost.ownerDocument;
+  const ownsFullscreen = () => fullscreenDocument.fullscreenElement === fullscreenHost;
+  let statusTimer;
+  function showError(message) {
+    let status=root.querySelector('.ss-status');
+    if(!status){status=document.createElement('div');status.className='ss-status';status.setAttribute('role','alert');root.append(status);}
+    status.textContent=message;clearTimeout(statusTimer);statusTimer=setTimeout(()=>status.remove(),6000);
+  }
+  let samples = [];
+  const saved = {};
+  const normalizeVisible = value => {
+    const next = {sanskrit:true,interlinear:false,word:false,literary:true,...value};
+    Object.keys(next).forEach(key => next[key] = next[key] === true);
+    if (!next.sanskrit) next.interlinear = false;
+    if (!next.sanskrit && !next.word && !next.literary) next.sanskrit = true;
+    return next;
+  };
+  let interfaceLocale="ru";
+  const state = { sample: samples.some(s => s.slug === saved.sample) ? saved.sample : '',
+    visible: normalizeVisible(saved.visible),
+    script: saved.script === 'iast' ? 'iast' : 'ru', theme: 'system', chrome: saved.chrome !== false, paper:true, paperStrength:.8,
+    mobileMode:'sanskrit', mobileInterlinear:false };
+  let slideshowOpen = true;
+  const content = root.querySelector('.ss-content');
+  const area = root.querySelector('.ss-reading-area');
+  const options = root.querySelector('.ss-options');
+  const modeButtons = [...root.querySelectorAll('[data-mode]')];
+  const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const sample = () => samples.find(s => s.slug === state.sample) || samples[0];
+  const compactMotion = () => root.dataset.native === 'true' || matchMedia('(max-width:767px), (pointer:coarse)').matches;
+  const mobileModes = entry => ['sanskrit',...(entry.dictionary.length ? ['word'] : []),...(entry.translation ? ['literary'] : [])];
+  function fit() {
+    if (!slideshowOpen) { content.style.setProperty('--ss-size','18px');root.dataset.fontSize='18.0';root.dataset.fitted='true';return; }
+    if (!area.clientWidth || !area.clientHeight) return;
+    const bounds=area.getBoundingClientRect();
+    const controls = [...root.querySelectorAll('.ss-tools button')]
+      .filter(button => button.getClientRects().length && !button.closest('[inert]')).map(button => button.getBoundingClientRect());
+    const ranges = [];
+    {
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        if (!walker.currentNode.textContent.trim()) continue;
+        const range = document.createRange(); range.selectNodeContents(walker.currentNode); ranges.push(range);
+      }
+    }
+    const textFits = () => ranges.every(range => [...range.getClientRects()].every(text =>
+      text.left>=bounds.left-1&&text.right<=bounds.right+1&&text.top>=bounds.top-1&&text.bottom<=bounds.bottom+1
+      && !controls.some(control => Math.min(text.right,control.right)-Math.max(text.left,control.left)>1
+        && Math.min(text.bottom,control.bottom)-Math.max(text.top,control.top)>1)));
+    let low = 1, high = 260;
+    const fits = size => {
+      content.style.setProperty('--ss-size', size + 'px');
+      return content.scrollWidth <= area.clientWidth && content.scrollHeight <= area.clientHeight - 14
+        && [...content.querySelectorAll('.ss-word,.ss-token')].every(word => word.getBoundingClientRect().width <= area.clientWidth)
+        && textFits();
+    };
+    for (let i = 0; i < 13; i++) { const middle = (low + high) / 2; if (fits(middle)) low = middle; else high = middle; }
+    content.style.setProperty('--ss-size', Math.floor(low * 10) / 10 + 'px');
+    root.dataset.fontSize = (Math.floor(low * 10) / 10).toFixed(1);
+    root.dataset.fitted = 'true';
+    const tools=root.querySelector('.ss-tools');
+    tools.dataset.scrollable=String(tools.scrollHeight>tools.clientHeight+1);
+  }
+  function remember() {
+    parent.postMessage({type:'slokamrita-slides-change',index:samples.indexOf(sample())},'*');
+  }
+  function render() {
+    const entry = sample(); if (!entry) return;
+    if(!moving)root.dataset.moving='false';
+    root.dataset.fitted = 'false';
+    root.style.colorScheme = state.theme === 'system' ? 'light dark' : state.theme;
+    root.dataset.appearance = state.theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.theme;
+    root.style.setProperty('--ss-paper-opacity',state.paper ? state.paperStrength : 0);
+    root.dataset.view = slideshowOpen ? 'slideshow' : 'reader';
+    root.dataset.chrome = state.chrome ? 'visible' : 'hidden';
+    root.dataset.fullscreen = String(ownsFullscreen());
+    const chromeButton = root.querySelector('[data-action="chrome"]');
+    const chromeLabel = interfaceLocale==='en' ? (state.chrome ? 'Hide title and navigation':'Show title and navigation') : (state.chrome ? 'Скрыть название и навигацию' : 'Показать название и навигацию');
+    chromeButton.setAttribute('aria-label', chromeLabel);
+    chromeButton.dataset.tooltip = chromeLabel;
+    chromeButton.setAttribute('aria-pressed', String(!state.chrome));
+    root.querySelector('.ss-counter').textContent = `${samples.indexOf(entry) + 1} / ${samples.length}`;
+    const mobile=compactMotion();
+    root.dataset.mobile=String(mobile);
+    state.visible = normalizeVisible(state.visible);
+    let visible;
+    if(mobile){
+      if(!mobileModes(entry).includes(state.mobileMode))state.mobileMode='sanskrit';
+      visible={sanskrit:state.mobileMode==='sanskrit',interlinear:state.mobileMode==='sanskrit'&&state.mobileInterlinear,
+        word:state.mobileMode==='word',literary:state.mobileMode==='literary'};
+    }else{
+      if(!entry.translation)state.visible.literary=false;
+      if(!entry.dictionary.length)state.visible.word=false;
+      if(!state.visible.sanskrit&&!state.visible.word&&!state.visible.literary)state.visible.sanskrit=true;
+      visible=state.visible;
+    }
+    root.dataset.textMode=mobile?state.mobileMode:'combined';
+    root.dataset.interlinear = String(visible.sanskrit && visible.interlinear);
+    modeButtons.forEach(button => {
+      const key = button.dataset.mode;
+      button.setAttribute('aria-pressed', String(visible[key]));
+      button.disabled = key === 'word' && !entry.dictionary.length || key === 'literary' && !entry.translation ? true
+        : mobile ? false : key === 'interlinear' ? !visible.sanskrit
+        : visible[key] && ['sanskrit','word','literary'].filter(name => visible[name]).length === 1;
+    });
+    root.querySelector('[data-action="previous"]').disabled = samples.indexOf(entry) === 0;
+    root.querySelector('[data-action="next"]').disabled = samples.indexOf(entry) === samples.length - 1;
+    const blocks = visible.sanskrit ? ['<h2 class="ss-heading">' + escape(entry.title) + '</h2>'] : [];
+    const linkAttr=link=>link?' data-word-link="'+escape(link)+'"':'';
+    if (visible.sanskrit) blocks.push('<section class="ss-sanskrit" data-interlinear="'+visible.interlinear+'" aria-label="Санскрит">' + entry.padas.map(pada => {
+      const groups=[];
+      for(const word of pada){if(word.joinBefore&&groups.length)groups[groups.length-1].push(word);else groups.push([word]);}
+      return '<div class="ss-pada">'+groups.map(group=>'<span class="ss-token">'+(visible.interlinear?'<span class="ss-gloss">'+escape(group.map(word=>word.gloss||'').filter(Boolean).join(' ')||'\u00a0')+'</span>':'')+group.map(word=>'<span class="ss-word"><span class="word-link-source"'+linkAttr(word.link)+'>'+word[state.script]+'</span></span>').join('')+'</span>').join('')+'</div>';
+    }).join('') + '</section>');
+    if (visible.word) blocks.push('<p class="ss-dictionary" aria-label="Пословный перевод">' + entry.dictionary.map(w => '<span class="word-link-meaning"'+linkAttr(w.link)+'><b class="word-link-original">' + w[state.script] + '</b> — ' + escape(w.translation) + '</span>').join('; ') + '.</p>');
+    if (visible.literary) blocks.push('<p class="ss-literary" aria-label="Литературный перевод">' + escape(entry.translation) + '</p>');
+    content.innerHTML = blocks.join('');
+    wordLinks.refresh({enabled:visible.sanskrit&&visible.word,scope:entry.slug});
+    fit();
+  }
+  root.querySelector('[data-action="options"]').addEventListener('click', event => {
+    stopMotion();
+    const open = options.dataset.open !== 'true';
+    options.dataset.open = String(open);
+    options.setAttribute('aria-hidden', String(!open));
+    options.toggleAttribute('inert', !open);
+    event.currentTarget.setAttribute('aria-expanded', String(open));
+    fit();prepareDragSlides();
+  });
+  modeButtons.forEach(button => button.addEventListener('click', () => {
+    const key = button.dataset.mode;
+    if(compactMotion()){navigate({kind:'mode',key});return;}
+    stopMotion();
+    state.visible[key] = !state.visible[key];
+    render();prepareDragSlides();remember();
+  }));
+  let moving = false, motionStage = null, motionVersion = 0;
+  const navigationQueue = [];
+  const reducedMotion = () => matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let dragCache=null;
+  const currentTarget = () => ({slug:state.sample,mobileMode:state.mobileMode,mobileInterlinear:state.mobileInterlinear});
+  function applyTarget(target){state.sample=target.slug;state.mobileMode=target.mobileMode;state.mobileInterlinear=target.mobileInterlinear;}
+  function dragCacheKey(){return JSON.stringify([currentTarget(),state.visible,state.script,state.chrome,state.theme,root.clientWidth,root.clientHeight,options.dataset.open,root.querySelector('.ss-tools').scrollTop]);}
+  function prepareDragSlides(){
+    if(!samples.length||!compactMotion()||moving)return;
+    const key=dragCacheKey();if(dragCache?.key===key)return;
+    const index=samples.indexOf(sample()),target=currentTarget(),current=captureSlide(target);
+    const horizontal=[{offset:0,target,node:current}],vertical=[{offset:0,target,node:current}];
+    for(const offset of [-1,1])if(samples[index+offset]){
+      const next={slug:samples[index+offset].slug,mobileMode:'sanskrit',mobileInterlinear:false};
+      horizontal.push({offset,target:next,node:captureSlide(next)});
+    }
+    const modes=mobileModes(sample()),modeIndex=modes.indexOf(state.mobileMode);
+    for(const offset of [-1,1])if(modes[modeIndex+offset]){
+      const next={...target,mobileMode:modes[modeIndex+offset]};
+      vertical.push({offset,target:next,node:captureSlide(next)});
+    }
+    dragCache={key,horizontal,vertical};
+    root.dataset.dragPrepared='true';
+  }
+  function captureSlide(target) {
+    const original = currentTarget();
+    const originalVisible = {...state.visible};
+    applyTarget(target);render();
+    const slide = document.createElement('div'); slide.className = 'ss-motion-slide';slide.setAttribute('aria-hidden','true');
+    slide.dataset.textMode=root.dataset.textMode;
+    const bounds = root.getBoundingClientRect();
+    for (const source of [area]) {
+      if (!source.getClientRects().length) continue;
+      const box = source.getBoundingClientRect(), clone = source.cloneNode(true);
+      Object.assign(clone.style,{position:'absolute',left:(box.left-bounds.left)+'px',top:(box.top-bounds.top)+'px',width:box.width+'px',height:box.height+'px',margin:'0',visibility:'visible'});
+      slide.append(clone);
+    }
+    applyTarget(original);state.visible=originalVisible;render();return slide;
+  }
+  function preparedSlide(target){
+    const cached=dragCache?.key===dragCacheKey()?[...dragCache.horizontal,...dragCache.vertical]
+      .find(slide=>slide.target.slug===target.slug&&slide.target.mobileMode===target.mobileMode&&slide.target.mobileInterlinear===target.mobileInterlinear):null;
+    return cached?cached.node.cloneNode(true):captureSlide(target);
+  }
+  function createStage() {
+    motionStage = document.createElement('div');motionStage.className='ss-motion-stage';motionStage.setAttribute('aria-hidden','true');root.append(motionStage);root.dataset.moving='true';
+  }
+  function drainNavigation(){const next=navigationQueue.shift();if(next)navigate(next);}
+  function finishMotion(target, version) {
+    if (version !== motionVersion) return;
+    const previous=state.sample;
+    if(target)applyTarget(target);
+    motionStage?.remove();motionStage=null;root.dataset.moving='false';moving=false;render();prepareDragSlides();
+    if(state.sample!==previous)remember();
+    drainNavigation();
+  }
+  const translate=(distance,axis)=>axis==='y'?`translate3d(0,${distance}px,0)`:`translate3d(${distance}px,0,0)`;
+  function animate(node,from,to,duration,delay=0,axis='x') {
+    return node.animate([{transform:translate(from,axis)},{transform:translate(to,axis)}],{duration,delay,easing:'cubic-bezier(.22,.75,.25,1)',fill:'both'}).finished.catch(()=>{});
+  }
+  function stopMotion(){
+    motionVersion++;navigationQueue.length=0;
+    const active=gesture;gesture=null;
+    if(active&&root.hasPointerCapture(active.id))root.releasePointerCapture(active.id);
+    motionStage?.getAnimations({subtree:true}).forEach(animation=>animation.cancel());
+    motionStage?.remove();motionStage=null;moving=false;root.dataset.moving='false';dragCache=null;
+  }
+  function change(direction){navigate({kind:'verse',direction});}
+  function navigate(request) {
+    if(!slideshowOpen)return;
+    if(moving){if(navigationQueue.length<12)navigationQueue.push(request);return;}
+    const modes=mobileModes(sample()),original=currentTarget();
+    let target,direction=request.direction,axis='x';
+    if(request.kind==='verse'){
+      const next=samples[samples.indexOf(sample())+direction];
+      if(!next){drainNavigation();return;}
+      target={slug:next.slug,mobileMode:'sanskrit',mobileInterlinear:false};
+    }else{
+      if(!compactMotion()){drainNavigation();return;}
+      const key=request.kind==='section'?modes[modes.indexOf(state.mobileMode)+direction]:request.key;
+      if(!key||key!=='interlinear'&&!modes.includes(key)){drainNavigation();return;}
+      target={...original,mobileMode:key==='interlinear'?'sanskrit':key,
+        mobileInterlinear:key==='interlinear'?(state.mobileMode==='sanskrit'?!state.mobileInterlinear:true):state.mobileInterlinear};
+      axis='y';direction=modes.indexOf(target.mobileMode)>modes.indexOf(state.mobileMode)?1:-1;
+    }
+    if(target.slug===state.sample&&target.mobileMode===state.mobileMode&&target.mobileInterlinear===state.mobileInterlinear){drainNavigation();return;}
+    if(target.slug===state.sample&&target.mobileMode===state.mobileMode||reducedMotion()){
+      applyTarget(target);render();prepareDragSlides();if(target.slug!==original.slug)remember();drainNavigation();return;
+    }
+    const current=preparedSlide(original),incoming=preparedSlide(target);
+    moving=true;const version=++motionVersion,distance=axis==='y'?root.clientHeight:root.clientWidth;
+    createStage();motionStage.append(current,incoming);
+    let jobs;
+    if(compactMotion()) jobs=[animate(current,0,-direction*distance,380,0,axis),animate(incoming,direction*distance,0,380,0,axis)];
+    else {
+      const parts=s=>[...s.querySelectorAll('.ss-content > *')];
+      const seed=samples.findIndex(entry=>entry.slug===target.slug);
+      jobs=[...parts(current).map((node,i)=>animate(node,0,-direction*distance,360+(i%2)*65,((i+seed)%3)*28)),
+        ...parts(incoming).map((node,i)=>animate(node,direction*distance,0,470+((i+seed)%3)*55,((i*2+seed)%4)*32))];
+    }
+    Promise.all(jobs).then(()=>finishMotion(target,version));
+  }
+  root.querySelector('[data-action="previous"]').addEventListener('click', () => change(-1));
+  root.querySelector('[data-action="next"]').addEventListener('click', () => change(1));
+  root.querySelector('[data-action="chrome"]').addEventListener('click', () => { stopMotion();state.chrome = !state.chrome; render();prepareDragSlides();remember(); });
+  root.querySelector('[data-action="close"]').addEventListener('click', async () => {
+    stopMotion();
+    if (ownsFullscreen()) await fullscreenDocument.exitFullscreen().catch(()=>{});
+    render();parent.postMessage({type:'slokamrita-slides-close',index:samples.indexOf(sample())},'*');
+  });
+  root.querySelector('[data-action="fullscreen"]').addEventListener('click', async () => {
+    try {
+      if (ownsFullscreen()) await fullscreenDocument.exitFullscreen();
+      else await fullscreenHost.requestFullscreen({navigationUI:'hide'});
+    } catch {
+      showError(interfaceLocale==='en'?'The browser did not allow fullscreen mode.':'Браузер не разрешил полноэкранный режим.');
+    }
+  });
+  const onFullscreenChange = () => {
+    stopMotion();
+    const button = root.querySelector('[data-action="fullscreen"]');
+    const label = interfaceLocale==='en' ? (ownsFullscreen()?'Exit fullscreen':'Enter fullscreen') : (ownsFullscreen() ? 'Свернуть полный экран' : 'Развернуть на весь экран');
+    root.dataset.fullscreen = String(ownsFullscreen());
+    button.setAttribute('aria-label', label); button.title = label;fit();prepareDragSlides();
+  };
+  fullscreenDocument.addEventListener('fullscreenchange',onFullscreenChange);
+  window.addEventListener('pagehide',()=>fullscreenDocument.removeEventListener('fullscreenchange',onFullscreenChange),{once:true});
+  document.addEventListener('keydown', event => {
+    if (!slideshowOpen || event.defaultPrevented || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+      || !root.getClientRects().length || event.target.closest('input,textarea,select,[contenteditable="true"],[role="slider"],[role="combobox"]')) return;
+    if(compactMotion()&&(event.key==='ArrowUp'||event.key==='ArrowDown')){
+      event.preventDefault();navigate({kind:'section',direction:event.key==='ArrowDown'?1:-1});return;
+    }
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    change(event.key === 'ArrowRight' ? 1 : -1);
+  });
+  let gesture = null, suppressEdgeClickUntil = 0;
+  root.addEventListener('click', event => {
+    if (!slideshowOpen || event.defaultPrevented || event.button !== 0 || performance.now() < suppressEdgeClickUntil
+      || event.target.closest('button,a,input,textarea,select,[contenteditable],[role="slider"],[role="combobox"]')) return;
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed) return;
+    const bounds = root.getBoundingClientRect();
+    const position = (event.clientX - bounds.left) / bounds.width;
+    if (position < .3) change(-1);
+    else if (position > .7) change(1);
+  });
+  root.addEventListener('pointerdown', event => {
+    if (!slideshowOpen || !event.isPrimary) { gesture = null; return; }
+    if (event.pointerType !== 'touch' || event.button !== 0 || moving) return;
+    // Touch hit testing may retarget a narrow gap to a nearby button.
+    const touched = document.elementFromPoint(event.clientX,event.clientY);
+    if (touched?.closest('button,a,input,textarea,select,[contenteditable],[role="slider"],[role="combobox"]')) return;
+    if(dragCache?.key!==dragCacheKey())prepareDragSlides();
+    if(!dragCache)return;
+    // The rail itself is transparent to gestures; an overflowing tool list
+    // keeps its own native vertical scroll instead of stealing a page swipe.
+    if(touched?.closest('.ss-tools[data-scrollable=true]'))return;
+    gesture = {id:event.pointerId,x:event.clientX,y:event.clientY,time:event.timeStamp,delta:0,axis:null,started:false,
+      version:++motionVersion,cache:dragCache,slides:[]};
+    root.setPointerCapture(event.pointerId);
+    moving=true;
+  });
+  root.addEventListener('pointermove', event => {
+    if (!gesture || event.pointerId !== gesture.id) return;
+    const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+    if(!gesture.started){
+      if(Math.max(Math.abs(dx),Math.abs(dy))<1)return;
+      gesture.axis=Math.abs(dy)>Math.abs(dx)?'y':'x';
+      gesture.distance=gesture.axis==='y'?root.clientHeight:root.clientWidth;
+      gesture.slides=(gesture.axis==='y'?gesture.cache.vertical:gesture.cache.horizontal)
+        .map(slide=>({...slide,node:slide.node.cloneNode(true)}));
+      createStage();motionStage.append(...gesture.slides.map(slide=>slide.node));
+      gesture.started=true;
+    }
+    if(event.cancelable)event.preventDefault();
+    const delta=gesture.axis==='y'?dy:dx,direction=delta<0?1:-1;
+    gesture.delta=gesture.slides.some(slide=>slide.offset===direction)?delta:delta*.2;
+    for(const {offset,node}of gesture.slides)node.style.transform=translate(offset*gesture.distance+gesture.delta,gesture.axis);
+    suppressEdgeClickUntil=performance.now()+450;
+  },{passive:false});
+  function releaseGesture(event,cancel=false){
+    if(!gesture||event&&event.pointerId!==gesture.id)return;
+    const g=gesture;gesture=null;
+    if(root.hasPointerCapture(g.id))root.releasePointerCapture(g.id);
+    if(!g.started){finishMotion(null,g.version);return;}
+    const direction=g.delta<0?1:-1,next=g.slides.find(slide=>slide.offset===direction);
+    const elapsed=Math.max(1,(event?.timeStamp||performance.now())-g.time);
+    const enough=Math.abs(g.delta)>Math.min(100,g.distance*.2)||Math.abs(g.delta)>18&&Math.abs(g.delta)/elapsed>.45;
+    const commit=!cancel&&enough&&next;
+    const destination=commit?-direction*g.distance:0;
+    Promise.all(g.slides.map(({offset,node})=>animate(node,offset*g.distance+g.delta,offset*g.distance+destination,
+      reducedMotion()?1:300,0,g.axis))).then(()=>finishMotion(commit?next.target:null,g.version));
+    suppressEdgeClickUntil=performance.now()+450;
+  }
+  root.addEventListener('pointerup',event=>releaseGesture(event));
+  root.addEventListener('pointercancel',event=>releaseGesture(event,true));
+  root.addEventListener('lostpointercapture',event=>releaseGesture(event,true));
+  window.addEventListener('blur',()=>releaseGesture(null,true));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!ownsFullscreen())root.querySelector('[data-action=close]').click();});
+  const observer = new ResizeObserver(fit); observer.observe(area);
+  window.addEventListener('resize',()=>{
+    stopMotion();render();prepareDragSlides();
+  });
+  root.querySelector('.ss-tools').addEventListener('scroll',()=>{fit();prepareDragSlides();},{passive:true});
+  options.addEventListener('transitionend',()=>{fit();prepareDragSlides();});
+  let initialized=false;
+  function applySafeInsets(value) {
+    for(const side of ['top','right','bottom','left']){
+      const amount=Number(value?.[side]);
+      root.style.setProperty('--ss-safe-'+side,(Number.isFinite(amount)?Math.max(0,Math.min(200,amount)):0)+'px');
+    }
+  }
+  window.addEventListener('message',async event=>{
+    if(event.source!==parent)return;
+    if(event.data?.type==='slokamrita-slides-viewport'){stopMotion();applySafeInsets(event.data.safeInsets);render();prepareDragSlides();return;}
+    if(event.data?.type==='slokamrita-slides-theme'){
+      stopMotion();state.theme=event.data.theme==='dark'?'dark':'light';render();prepareDragSlides();return;
+    }
+    if(event.data?.type==='slokamrita-slides-close-error'){showError(event.data.message);return;}
+    if(event.data?.type!=='slokamrita-slides-init')return;
+    if(!Array.isArray(event.data.samples)||!event.data.samples.length)return;
+    if(initialized)return;initialized=true;
+    samples=event.data.samples;interfaceLocale=event.data.locale;
+    root.dataset.native=String(event.data.native===true);
+    applySafeInsets(event.data.safeInsets);
+    state.sample=samples[Math.max(0,Math.min(samples.length-1,event.data.initialIndex||0))].slug;
+    state.theme=event.data.theme==='dark'?'dark':'light';
+    state.script=event.data.locale==='en'?'iast':'ru';
+    state.visible=normalizeVisible(event.data.visible);
+    for(const icon of root.querySelectorAll('[data-lucide]')){
+      const markup=event.data.icons?.[icon.dataset.lucide];if(markup)icon.outerHTML=markup;
+    }
+    render();
+    try {
+      await Promise.all([
+        document.fonts.load('18px "Gaura PT Serif"'),document.fonts.load('500 18px "Gaura PT Serif"'),
+        document.fonts.load('18px "Vedarama Serif"'),document.fonts.load('italic 18px "Vedarama Serif"'),
+        document.fonts.load('18px "PT Sans"'),document.fonts.load('18px "Noto Sans Devanagari"'),
+        ...['parchment.webp','corner.png'].map(src=>{const img=new Image();img.src=src;return img.decode();})
+      ]);
+      fit();prepareDragSlides();root.dataset.ready='true';
+      parent.postMessage({type:'slokamrita-slides-paint-ready'},'*');
+    } catch {
+      parent.postMessage({type:'slokamrita-slides-init-error'},'*');return;
+    }
+    if(event.data.locale==='en'){
+      const labels={'Закрыть слайд-шоу':'Close slideshow','Переключить тему':'Switch theme','Развернуть на весь экран':'Enter fullscreen','Режим отображения':'Display options','Санскрит':'Sanskrit','Надстрочный перевод':'Interlinear translation','Пословный перевод':'Word-for-word translation','Литературный перевод':'Translation','Предыдущий стих':'Previous verse','Следующий стих':'Next verse'};
+      for(const el of root.querySelectorAll('[aria-label]')){const label=labels[el.getAttribute('aria-label')];if(label){el.setAttribute('aria-label',label);el.title=label;}}
+    }
+  });
+  parent.postMessage({type:'slokamrita-slides-ready'},'*');
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(state.theme==='system')render();});
+})();
+</script>
+</body></html>

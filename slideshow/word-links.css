@@ -1,0 +1,7 @@
+.word-links-scope{--word-link-source:#936329;--word-link-guru:#654318;--word-link-meaning:#77582f}
+.dark .word-links-scope,[data-theme=dark] .word-links-scope,.word-links-scope[data-appearance=dark]{--word-link-source:#fff0ae;--word-link-guru:#fff;--word-link-meaning:#f0d9a0}
+[data-word-links=on] .word-link-source,[data-word-links=on] .word-link-meaning,[data-word-links=on] .word-link-original,[data-word-links=on] .guru-vowel,[data-word-links=on] .ss-guru{transition:color .14s ease}
+:is(#sloka-slide-prototype,.word-links-scope)[data-word-links=on] .word-link-source.word-link-active,:is(#sloka-slide-prototype,.word-links-scope)[data-word-links=on] .word-link-meaning.word-link-active .word-link-original{color:var(--word-link-source)}
+:is(#sloka-slide-prototype,.word-links-scope)[data-word-links=on] .word-link-meaning.word-link-active{color:var(--word-link-meaning)}
+:is(#sloka-slide-prototype,.word-links-scope)[data-word-links=on] .word-link-source.word-link-active .guru-vowel,:is(#sloka-slide-prototype,.word-links-scope)[data-word-links=on] .word-link-source.word-link-active .ss-guru{color:var(--word-link-guru)}
+@media(prefers-reduced-motion:reduce){[data-word-links=on] .word-link-source,[data-word-links=on] .word-link-meaning,[data-word-links=on] .word-link-original,[data-word-links=on] .guru-vowel,[data-word-links=on] .ss-guru{transition:none}}
