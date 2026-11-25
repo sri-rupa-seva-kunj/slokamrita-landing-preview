@@ -90,13 +90,16 @@
 #sloka-slide-prototype .ss-line:last-child{width:64%}
 #sloka-slide-prototype{isolation:isolate}
 #sloka-slide-prototype::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background-image:url(parchment.webp);background-repeat:no-repeat;background-size:cover;background-position:center;mix-blend-mode:multiply;opacity:var(--ss-paper-opacity,.85)}
-#sloka-slide-prototype .ss-corner{position:absolute;width:min(180px,24%,30%);aspect-ratio:1;z-index:0;pointer-events:none;background:var(--ss-corner-image) top left/contain no-repeat;opacity:var(--ss-paper-opacity,.85)}
-#sloka-slide-prototype .ss-corner-top{top:0;left:0}
-#sloka-slide-prototype .ss-corner-bottom{bottom:0;right:0;transform:rotate(180deg)}
-#sloka-slide-prototype[data-appearance=dark] .ss-corner{opacity:calc(var(--ss-paper-opacity,.85)*.22)}
 #sloka-slide-prototype .ss-pada:nth-child(odd){background:transparent}
 #sloka-slide-prototype[data-appearance=dark]::before{filter:invert(1);mix-blend-mode:screen;opacity:calc(var(--ss-paper-opacity,.5)*.5)}
 #sloka-slide-prototype .ss-reading-area{position:relative;z-index:1}
+/* Soft: a calm, very light grey page with no paper texture and gentler contrast. */
+#sloka-slide-prototype[data-appearance=soft]{--ss-bg:#ecedeb;--ss-fg:#35373a;--ss-muted:#6a6c6f;--ss-sanskrit:#97713f;--ss-guru:#6b4f2e;--ss-rule:#d7d8d5;--ss-hover:#f6f6f5}
+#sloka-slide-prototype[data-appearance=soft]::before{display:none}
+#sloka-slide-prototype [data-action=theme]{grid-column:1;grid-row:6}
+#sloka-slide-prototype[data-native=true] [data-action=theme]{grid-row:5}
+#sloka-slide-prototype .ss-icon-theme{display:none;align-items:center;justify-content:center;flex:none;width:20px;height:20px;line-height:0}
+#sloka-slide-prototype[data-appearance=light] .ss-icon-light,#sloka-slide-prototype[data-appearance=soft] .ss-icon-soft,#sloka-slide-prototype[data-appearance=dark] .ss-icon-dark{display:inline-flex}
 #sloka-slide-prototype .ss-motion-stage{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 #sloka-slide-prototype .ss-motion-slide{position:absolute;inset:0;pointer-events:none;will-change:transform}
 #sloka-slide-prototype[data-moving=true]>.ss-reading-area{visibility:hidden}
@@ -119,9 +122,7 @@
 #sloka-slide-prototype[data-view=reader] .ss-rail,#sloka-slide-prototype[data-view=reader] .ss-counter{display:none}
 #sloka-slide-prototype[data-view=reader] .ss-reopen{display:inline-flex;position:absolute;top:24px;right:24px;z-index:3}
 </style>
-<section id="sloka-slide-prototype" class="word-links-scope" aria-label="Слайд-шоу Шлокамриты" style="--ss-corner-image:url(corner.png)">
-  <div class="ss-corner ss-corner-top" aria-hidden="true"></div>
-  <div class="ss-corner ss-corner-bottom" aria-hidden="true"></div>
+<section id="sloka-slide-prototype" class="word-links-scope" aria-label="Слайд-шоу Шлокамриты">
   <div class="ss-gesture-surface" aria-hidden="true"></div>
   <main class="ss-reading-area" aria-label="Текст стиха"><div class="ss-content"></div></main>
   <aside class="ss-rail" aria-label="Управление слайд-шоу">
@@ -130,6 +131,7 @@
       <button type="button" class="cursor-interaction" data-action="fullscreen" aria-label="Развернуть на весь экран" title="Развернуть на весь экран" data-tooltip-placement="left"><span class="ss-icon-maximize" aria-hidden="true"><i data-lucide="maximize"></i></span><span class="ss-icon-minimize" aria-hidden="true"><i data-lucide="minimize"></i></span></button>
       <button type="button" class="cursor-interaction" data-action="options" aria-label="Режим отображения" aria-expanded="false" aria-controls="sloka-slide-options" title="Режим отображения" data-tooltip-placement="left"><i data-lucide="settings" aria-hidden="true"></i></button>
       <button type="button" class="cursor-interaction" data-action="chrome" aria-label="Скрыть название и навигацию" aria-pressed="false" title="Скрыть название и навигацию" data-tooltip-placement="left"><span class="ss-icon-hide" aria-hidden="true"><i data-lucide="eye-off"></i></span><span class="ss-icon-show" aria-hidden="true"><i data-lucide="eye"></i></span></button>
+      <button type="button" class="cursor-interaction" data-action="theme" aria-label="Цветовой режим: светлый" title="Цветовой режим: светлый" data-tooltip-placement="left"><span class="ss-icon-theme ss-icon-light" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg></span><span class="ss-icon-theme ss-icon-soft" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 4h.01"></path><path d="M20 12h.01"></path><path d="M12 20h.01"></path><path d="M4 12h.01"></path><path d="M17.657 6.343h.01"></path><path d="M17.657 17.657h.01"></path><path d="M6.343 17.657h.01"></path><path d="M6.343 6.343h.01"></path></svg></span><span class="ss-icon-theme ss-icon-dark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg></span></button>
       <div id="sloka-slide-options" class="ss-options" data-open="false" aria-hidden="true" inert>
         <div class="ss-options-inner" role="group" aria-label="Режимы отображения">
           <button type="button" class="cursor-interaction" data-mode="sanskrit" aria-label="Санскрит" aria-pressed="true" title="Санскрит" data-tooltip-placement="left"><span class="ss-symbol" lang="sa" aria-hidden="true">सं</span></button>
@@ -170,6 +172,10 @@
     return next;
   };
   let interfaceLocale="ru";
+  const THEMES=['light','soft','dark'];
+  const THEME_KEY='slokamrita-slides-theme';
+  const savedTheme=()=>{try{const value=localStorage.getItem(THEME_KEY);return THEMES.includes(value)?value:null}catch{return null}};
+  const themeLabel=theme=>interfaceLocale==='en'?'Colour mode: '+{light:'light',soft:'soft',dark:'dark'}[theme]:'Цветовой режим: '+{light:'светлый',soft:'мягкий',dark:'тёмный'}[theme];
   const state = { sample: samples.some(s => s.slug === saved.sample) ? saved.sample : '',
     visible: normalizeVisible(saved.visible),
     script: saved.script === 'iast' ? 'iast' : 'ru', theme: 'system', chrome: saved.chrome !== false, paper:true, paperStrength:.8,
@@ -222,9 +228,13 @@
     const entry = sample(); if (!entry) return;
     if(!moving)root.dataset.moving='false';
     root.dataset.fitted = 'false';
-    root.style.colorScheme = state.theme === 'system' ? 'light dark' : state.theme;
+    root.style.colorScheme = state.theme === 'system' ? 'light dark' : state.theme === 'dark' ? 'dark' : 'light';
     root.dataset.appearance = state.theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.theme;
     root.style.setProperty('--ss-paper-opacity',state.paper ? state.paperStrength : 0);
+    const themeButton = root.querySelector('[data-action="theme"]');
+    const currentTheme = root.dataset.appearance;
+    themeButton.setAttribute('aria-label', themeLabel(currentTheme));
+    themeButton.title = themeLabel(currentTheme);
     root.dataset.view = slideshowOpen ? 'slideshow' : 'reader';
     root.dataset.chrome = state.chrome ? 'visible' : 'hidden';
     root.dataset.fullscreen = String(ownsFullscreen());
@@ -393,6 +403,13 @@
   root.querySelector('[data-action="previous"]').addEventListener('click', () => change(-1));
   root.querySelector('[data-action="next"]').addEventListener('click', () => change(1));
   root.querySelector('[data-action="chrome"]').addEventListener('click', () => { stopMotion();state.chrome = !state.chrome; render();prepareDragSlides();remember(); });
+  root.querySelector('[data-action="theme"]').addEventListener('click', () => {
+    stopMotion();
+    const current = THEMES.includes(state.theme) ? state.theme : root.dataset.appearance;
+    state.theme = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
+    try { localStorage.setItem(THEME_KEY, state.theme); } catch {}
+    render();prepareDragSlides();
+  });
   root.querySelector('[data-action="close"]').addEventListener('click', async () => {
     stopMotion();
     if (ownsFullscreen()) await fullscreenDocument.exitFullscreen().catch(()=>{});
@@ -506,7 +523,7 @@
     if(event.source!==parent)return;
     if(event.data?.type==='slokamrita-slides-viewport'){stopMotion();applySafeInsets(event.data.safeInsets);render();prepareDragSlides();return;}
     if(event.data?.type==='slokamrita-slides-theme'){
-      stopMotion();state.theme=event.data.theme==='dark'?'dark':'light';render();prepareDragSlides();return;
+      stopMotion();state.theme=THEMES.includes(event.data.theme)?event.data.theme:'light';render();prepareDragSlides();return;
     }
     if(event.data?.type==='slokamrita-slides-close-error'){showError(event.data.message);return;}
     if(event.data?.type!=='slokamrita-slides-init')return;
@@ -516,7 +533,7 @@
     root.dataset.native=String(event.data.native===true);
     applySafeInsets(event.data.safeInsets);
     state.sample=samples[Math.max(0,Math.min(samples.length-1,event.data.initialIndex||0))].slug;
-    state.theme=event.data.theme==='dark'?'dark':'light';
+    state.theme=savedTheme()||(THEMES.includes(event.data.theme)?event.data.theme:'light');
     state.script=event.data.locale==='en'?'iast':'ru';
     state.visible=normalizeVisible(event.data.visible);
     for(const icon of root.querySelectorAll('[data-lucide]')){
@@ -528,7 +545,7 @@
         document.fonts.load('18px "Gaura PT Serif"'),document.fonts.load('500 18px "Gaura PT Serif"'),
         document.fonts.load('18px "Vedarama Serif"'),document.fonts.load('italic 18px "Vedarama Serif"'),
         document.fonts.load('18px "PT Sans"'),document.fonts.load('18px "Noto Sans Devanagari"'),
-        ...['parchment.webp','corner.png'].map(src=>{const img=new Image();img.src=src;return img.decode();})
+        ...['parchment.webp'].map(src=>{const img=new Image();img.src=src;return img.decode();})
       ]);
       fit();prepareDragSlides();root.dataset.ready='true';
       parent.postMessage({type:'slokamrita-slides-paint-ready'},'*');
