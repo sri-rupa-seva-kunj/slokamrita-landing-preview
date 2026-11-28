@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru" data-theme="dark" style="color-scheme:dark;--content-font-size:100%;--content-font-size-multiplier:1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Макет: блог — Шлокамрита</title>
+<link rel="stylesheet" href="app/css/2htsehdapv726.css">
+<link rel="stylesheet" href="app/css/32d-dtwspp0od.css">
+<link rel="stylesheet" href="app/css/078xrn-2_xz4g.css">
+<link rel="stylesheet" href="app/css/2vkmxsgf0durl.css">
+<link rel="stylesheet" href="app/css/0uq3e6h3z9cla.css">
+<link rel="stylesheet" href="app/extra.css?v=2">
+</head>
+<body data-tab="blog">
+<div class="min-h-screen flex flex-col bg-light-primary dark:bg-dark-primary"><div class="flex-1 flex flex-col">
+  <header data-app-header data-back="lectures.html"></header>
+  <main class="flex-1"><div class="w-full px-md py-lg">
+    <!-- Title row as on a book page -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-md mb-lg">
+      <div class="flex flex-wrap items-baseline gap-x-md gap-y-xs justify-between md:justify-start">
+        <h1 class="entity-name text-h2 font-primary font-semibold text-text-light-primary dark:text-text-dark-primary">Блог</h1>
+        <div class="flex flex-wrap items-end gap-x-md gap-y-xs text-sm font-secondary text-text-light-secondary dark:text-text-dark-secondary relative top-[2px]"><span class="inline-flex items-center gap-1" title="Статей"><i data-i="newspaper" data-size="16"></i><span class="tabular-nums">4</span></span></div>
+      </div>
+    </div>
+    <!-- Topics as the segmented switch of the app -->
+    <div class="flex gap-1 bg-light-secondary dark:bg-dark-tertiary rounded-lg p-1 mb-lg mock-seg-scroll" role="group" aria-label="Темы" data-seg>
+      <button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition bg-accent-brown text-text-dark-primary">Все</button>
+      <button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition text-text-light-primary dark:text-text-dark-primary hover:bg-light-tertiary dark:hover:bg-dark-tertiary/50">Практика</button>
+      <button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition text-text-light-primary dark:text-text-dark-primary hover:bg-light-tertiary dark:hover:bg-dark-tertiary/50">Санскрит</button>
+      <button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition text-text-light-primary dark:text-text-dark-primary hover:bg-light-tertiary dark:hover:bg-dark-tertiary/50">Праздники</button>
+      <button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition text-text-light-primary dark:text-text-dark-primary hover:bg-light-tertiary dark:hover:bg-dark-tertiary/50">Новости</button>
+    </div>
+    <!-- Article cards: the verse card of the app with a cover on top -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md" id="posts"></div>
+    <p class="mock-note" style="margin:24px 0 0">Тексты и даты — примеры. Статьи пишутся в админке. Язык статьи следует языку приложения: в английской версии показываются английские тексты.</p>
+  </div></main>
+  <footer data-app-footer></footer>
+</div></div>
+<script src="app/icons.js?v=2"></script>
+<script>
+const POSTS = [
+  ['Практика', 'Как выучить шлоку за неделю', 'Простой план на семь дней: по одной строке в день, повторение по карточкам и проверка наизусть в конце недели.', '18 ноября 2026', 6, '../assets/kunj.jpg'],
+  ['Санскрит', 'Гуру и лагху: почему стих поют нараспев', 'Долгие и краткие слоги задают ритм шлоки. Разбираем, как видеть их в тексте и слышать при чтении.', '4 ноября 2026', 8, '../assets/parchment.webp'],
+  ['Праздники', 'Шлоки для Картики', 'Подборка стихов к месяцу Картика: «Дамодараштака» и стихи о Шри Шри Радхе-Дамодаре.', '21 октября 2026', 4, '../assets/lecture-slide.webp'],
+  ['Новости', 'Слайды для лекций: три цветовых режима', 'Светлый, тёмный и мягкий — переключаются прямо в слайде и запоминаются.', '25 ноября 2026', 3, '../assets/app/slides-tile-ru-light.webp'],
+];
+document.getElementById('posts').innerHTML = POSTS.map(([tag, title, text, date, min, img]) => `
+  <div class="card hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition cursor-pointer p-md !bg-transparent hover:!bg-black/5 dark:hover:!bg-white/5 relative">
+    <a aria-label="${title}" class="absolute inset-0 z-0 rounded-[inherit]" href="article.html"></a>
+    <div class="relative z-10 h-full flex flex-col justify-between gap-sm pointer-events-none">
+      <div class="flex flex-col gap-xs">
+        <img src="${img}" alt="" class="w-full aspect-video object-cover rounded-md mb-xs">
+        <span class="text-xs font-secondary font-semibold uppercase text-accent-brown dark:text-accent-gold">${tag}</span>
+        <h4 class="entity-name font-primary font-semibold text-lg text-text-light-primary dark:text-text-dark-primary">${title}</h4>
+        <p class="font-secondary text-body-md text-text-light-secondary dark:text-text-dark-secondary line-clamp-3">${text}</p>
+      </div>
+      <div class="flex items-center gap-md text-xs font-secondary text-text-light-tertiary dark:text-text-dark-tertiary">
+        <span class="inline-flex items-center gap-1"><i data-i="calendar" data-size="14"></i>${date}</span>
+        <span class="inline-flex items-center gap-1"><i data-i="clock" data-size="14"></i>${min} мин</span>
+      </div>
+    </div>
+  </div>`).join('');
+</script>
+<script src="app/shell.js?v=2"></script>
+<script>
+document.querySelectorAll('[data-seg] button').forEach(button => button.addEventListener('click', () => {
+  const on = 'bg-accent-brown text-text-dark-primary'.split(' ');
+  const off = 'text-text-light-primary dark:text-text-dark-primary hover:bg-light-tertiary dark:hover:bg-dark-tertiary/50'.split(' ');
+  button.parentElement.querySelectorAll('button').forEach(other => { other.classList.remove(...on, ...off); other.classList.add(...(other === button ? on : off)); });
+}));
+</script>
+</body>
+</html>

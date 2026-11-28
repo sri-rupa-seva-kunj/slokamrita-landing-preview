@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru" data-theme="dark" style="color-scheme:dark;--content-font-size:100%;--content-font-size-multiplier:1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Макет: шлоки для лекций — Шлокамрита</title>
+<link rel="stylesheet" href="app/css/2htsehdapv726.css">
+<link rel="stylesheet" href="app/css/32d-dtwspp0od.css">
+<link rel="stylesheet" href="app/css/078xrn-2_xz4g.css">
+<link rel="stylesheet" href="app/css/2vkmxsgf0durl.css">
+<link rel="stylesheet" href="app/css/0uq3e6h3z9cla.css">
+<link rel="stylesheet" href="app/extra.css?v=2">
+</head>
+<body data-tab="lectures">
+<div class="min-h-screen flex flex-col bg-light-primary dark:bg-dark-primary"><div class="flex-1 flex flex-col" id="view"></div></div>
+<script src="app/icons.js?v=2"></script>
+<script src="lectures-data.js?v=1"></script>
+<script src="app/shell.js?v=2"></script>
+<script>
+/* Screens of the new «Лекции» section, built from the app's own markup:
+   #/            the separate «Лекции» page: book → canto → chapter rows, verse cards inside a chapter
+   #/sb/1/2      a chapter, laid out like a book page
+   #/sb/1/2/6    a verse, laid out like the verse page, Sanskrit only */
+const D = window.LECTURE_DATA;
+const I = window.appIcon;
+const CANTO_CHAPTERS = [19, 10, 33, 31, 26, 19, 15, 24, 24, 90, 31, 13];
+const BOOKS = [
+  { id: 'sb', name: 'Шримад-Бхагаватам', count: '18 000' },
+  { id: 'bg', name: 'Бхагавад-гита', count: '700' },
+  { id: 'cc', name: 'Шри Чайтанья-чаритамрита', count: '11 555' },
+  { id: 'iso', name: 'Шри Ишопанишад', count: '18' },
+  { id: 'noi', name: 'Нектар наставлений', count: '11' },
+];
+const open = new Set(['sb', 'sb1', 'sb1.2']);
+const chapterTitle = n => (D.canto1.find(c => c[0] === n) || [n, ''])[1];
+const plural = (n, one, few, many) => n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? few : many;
+
+// Catalog row, as the book rows on the main page: title button + square buttons (no print and no playlist here).
+const square = (label, name, href, disabled) => {
+  const cls = 'flex-1 sm:flex-none flex items-center justify-center py-sm sm:py-0 px-md rounded-md bg-light-tertiary dark:bg-dark-secondary border border-light-tertiary dark:border-dark-tertiary text-text-light-secondary dark:text-text-dark-secondary hover:text-accent-brown dark:hover:text-accent-gold hover:border-accent-gold transition shrink-0 disabled:opacity-35 disabled:cursor-not-allowed';
+  return href ? `<a href="${href}" title="${label}" aria-label="${label}" class="${cls}">${I(name)}</a>` : `<button type="button" title="${label}" aria-label="${label}" class="${cls}"${disabled ? ' disabled' : ''}>${I(name)}</button>`;
+};
+function row({ key, title, count, level, href }) {
+  const expanded = open.has(key);
+  const size = level === 0 ? 'text-lg' : 'text-base';
+  return `<div class="w-full mb-sm grid grid-cols-2 items-stretch gap-px sm:gap-2 sm:[&>button:not(:first-child)]:px-0 sm:[&>a]:px-0 mock-row2">
+    <button type="button" data-toggle="${key}" aria-expanded="${expanded}" class="col-span-2 sm:col-span-1 w-full min-w-0 bg-light-tertiary dark:bg-dark-secondary text-text-light-primary dark:text-text-dark-primary font-primary font-semibold ${size} px-md py-sm rounded-md shadow-sm dark:shadow-dark-sm border border-light-tertiary dark:border-dark-tertiary flex items-start gap-2 text-left hover:bg-light-tertiary/80 dark:hover:bg-dark-secondary/80 transition-colors">${I(expanded ? 'chevron-down' : 'chevron-right', 20, 'mt-1 shrink-0', 1.5)}<span class="entity-name min-w-0 text-left">${title}${count ? `&nbsp;<span class="text-sm text-text-light-tertiary dark:text-text-dark-tertiary">(${count})</span>` : ''}</span></button>
+    ${square('Открыть слайд-шоу', 'gallery-vertical-end')}${square('Открыть', 'chevron-right', href || '#/')}
+  </div>`;
+}
+// Verse card, as on a book page.
+const card = (c, ch, v) => `<div class="card hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition cursor-pointer p-md !bg-transparent hover:!bg-black/5 dark:hover:!bg-white/5 relative">
+  <a aria-label="Шримад-Бхагаватам ${c}.${ch}.${v.n}" class="absolute inset-0 z-0 rounded-[inherit]" href="#/sb/${c}/${ch}/${v.n}"></a>
+  <div class="absolute top-2 right-2 z-20"><button type="button" title="Добавить в коллекцию" class="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition text-text-light-secondary dark:text-text-dark-secondary">${I('star', 18)}</button></div>
+  <div class="relative z-10 h-full flex flex-col justify-between gap-sm pointer-events-none"><div class="flex flex-col gap-xs">
+    <h4 class="entity-name font-primary font-semibold text-lg text-text-light-primary dark:text-text-dark-primary pr-8">Шримад-Бхагаватам ${c}.${ch}.${v.n}</h4>
+    <p class="verse-source font-verse text-body-md text-text-light-secondary dark:text-text-dark-secondary line-clamp-2">${v.lines[0]}</p>
+    <span class="text-base font-secondary text-text-light-secondary dark:text-text-dark-secondary">Вьясадева</span></div>
+    <div class="flex items-center justify-between gap-sm"><div></div><div class="relative z-20 flex items-center gap-0.5 shrink-0 pointer-events-auto"><button type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-accent-brown dark:text-accent-gold hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition" title="Открыть слайд-шоу">${I('eye', 18)}</button></div></div>
+  </div></div>`;
+const grid = (c, ch) => `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">${D.sb12.map(v => card(c, ch, v)).join('')}</div>`;
+
+
+const routes = {
+  home() {
+    const nest = (pad, html) => `<div class="mock-nest" style="--nest:${pad}px">${html}</div>`;
+    let list = '';
+    for (const b of BOOKS) {
+      list += `<div class="mb-lg">${row({ key: b.id, title: b.name, count: b.count, level: 0, href: b.id === 'sb' ? '#/sb/1/2' : '#/' })}`;
+      if (b.id === 'sb' && open.has('sb')) {
+        CANTO_CHAPTERS.forEach((chapters, i) => {
+          const c = i + 1;
+          list += nest(24, row({ key: `sb${c}`, title: `Песнь ${c}`, count: `${chapters} ${plural(chapters, 'глава', 'главы', 'глав')}`, level: 1 }));
+          if (c === 1 && open.has('sb1')) {
+            D.canto1.forEach(([n, t]) => {
+              list += nest(48, row({ key: `sb1.${n}`, title: `Глава ${n}. ${t}`, count: n === 2 ? '33' : '', level: 2, href: n === 2 ? '#/sb/1/2' : '#/' }));
+              if (n === 2 && open.has('sb1.2')) list += nest(48, `<div class="mb-lg">${grid(1, 2)}</div>`);
+            });
+          }
+        });
+      }
+      list += '</div>';
+    }
+    return `${window.appHeader('index.html')}
+      <div class="px-md pt-lg">
+        <div class="flex flex-wrap items-baseline gap-x-md gap-y-xs mb-md"><h1 class="entity-name text-h2 font-primary font-semibold text-text-light-primary dark:text-text-dark-primary">Лекции</h1>
+          <div class="flex flex-wrap items-end gap-x-md gap-y-xs text-sm font-secondary text-text-light-secondary dark:text-text-dark-secondary relative top-[2px]"><span class="inline-flex items-center gap-1" title="Книг">${I('book-open', 16)}<span class="tabular-nums">${BOOKS.length}</span></span></div></div>
+        <div class="relative">${I('search', 18, 'absolute left-3 top-1/2 -translate-y-1/2 text-text-light-tertiary dark:text-text-dark-tertiary')}<input placeholder="Поиск стиха... например, ШБ 1.2.6" class="w-full pl-10 pr-10 py-2 bg-light-secondary dark:bg-dark-tertiary text-text-light-primary dark:text-text-dark-primary rounded-lg border border-transparent font-secondary text-base" type="text"></div>
+      </div>
+      <div class="flex-1 px-md py-md">${list}
+        <p class="mock-note" style="margin:8px 0 0">Макет: тексты есть только у главы 1.2 Шримад-Бхагаватам (из Ведабазы, на русском). Нажатие на строку раскрывает следующий уровень, кнопка «›» справа открывает страницу главы. Это отдельная страница, не вкладка каталога: в каталоге остаются «Книги», «Авторы», «Таттвы» и «Подборки». Сюда ведёт иконка «Лекции» в шапке и кнопка «Лекции» в подвале (на телефоне — только в подвале). Печати и прослушивания в лекциях нет.</p></div>
+      <footer data-app-footer></footer>`;
+  },
+  chapter(c, ch) {
+    return `${window.appHeader('#/')}
+      <main class="flex-1"><div class="w-full px-md py-lg">
+        <div class="text-sm font-secondary text-text-light-tertiary dark:text-text-dark-tertiary mb-xs">Шримад-Бхагаватам · Песнь ${c}</div>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-md mb-lg">
+          <div class="flex flex-wrap items-baseline gap-x-md gap-y-xs justify-between md:justify-start"><h1 class="entity-name text-h2 font-primary font-semibold text-text-light-primary dark:text-text-dark-primary">Глава ${ch}. ${chapterTitle(ch)}</h1>
+            <div class="flex flex-wrap items-end gap-x-md gap-y-xs text-sm font-secondary text-text-light-secondary dark:text-text-dark-secondary relative top-[2px]"><span class="inline-flex items-center gap-1" title="Стихов в главе">${I('book-open', 16)}<span class="tabular-nums">${D.sb12.length}</span></span></div></div>
+          <div class="flex flex-wrap items-center gap-1 sm:gap-sm">${[['gallery-vertical-end', 'Слайд-шоу']].map(([n, l]) => `<button type="button" class="inline-flex items-center justify-center gap-2 px-2 sm:px-md py-sm whitespace-nowrap rounded-lg text-text-light-primary dark:text-text-dark-primary active:text-accent-brown dark:active:text-accent-gold font-secondary text-sm">${I(n, 18)}<span>${l}</span></button>`).join('')}</div>
+        </div>${grid(c, ch)}</div></main>
+      <footer data-app-footer></footer>`;
+  },
+  verse(c, ch, n) {
+    const i = Math.max(0, D.sb12.findIndex(v => v.n === n));
+    const v = D.sb12[i];
+    const prev = D.sb12[i - 1], next = D.sb12[i + 1];
+    const meta = (k, val) => `<div class="flex items-center gap-1"><span class="text-text-light-tertiary dark:text-text-dark-tertiary">${k}:</span><span class="text-text-light-primary dark:text-text-dark-primary">${val}</span></div>`;
+    const navBtn = (side, w) => w ? `<a href="#/sb/${c}/${ch}/${w.n}" class="flex-1 min-w-0 flex items-center ${side === 'next' ? 'justify-end text-right' : 'text-left'} gap-2 px-xs md:px-sm py-2 rounded-md hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition">${side === 'prev' ? I('chevron-left', 18, 'text-accent-brown dark:text-accent-gold shrink-0', 1.5) : ''}<div class="max-md:hidden min-w-0"><div class="text-[10px] font-secondary uppercase text-text-light-tertiary dark:text-text-dark-tertiary">${side === 'prev' ? 'Предыдущий' : 'Следующий'}</div><div class="text-xs font-secondary text-text-light-primary dark:text-text-dark-primary truncate">Шримад-Бхагаватам ${c}.${ch}.${w.n}</div></div>${side === 'next' ? I('chevron-right', 18, 'text-accent-brown dark:text-accent-gold shrink-0', 1.5) : ''}</a>` : '<div class="flex-1"></div>';
+    return `${window.appHeader(`#/sb/${c}/${ch}`)}
+      <div class="flex-1 flex flex-col">
+        <div class="px-md pt-lg pb-xs flex items-start justify-between gap-sm"><h1 class="entity-name text-lg lg:text-2xl font-primary font-semibold text-text-light-primary dark:text-text-dark-primary leading-snug flex-1">Шримад-Бхагаватам ${c}.${ch}.${v.n}</h1>
+          <div class="flex-shrink-0 mt-0.5 mr-1.5 flex items-start gap-sm text-text-light-secondary dark:text-text-dark-secondary">${I('star', 22)}${I('share2', 22)}</div></div>
+        <div class="px-md"><div class="flex flex-wrap gap-x-lg gap-y-xs text-sm font-secondary">${meta('Автор', 'Вьясадева')}${meta('Книга', 'Шримад-Бхагаватам')}${meta('Песнь', c)}${meta('Глава', `${ch}. ${chapterTitle(ch)}`)}</div></div>
+        <div class="px-md pt-lg md:pt-md pb-sm"><div class="flex gap-1 bg-light-secondary dark:bg-dark-tertiary rounded-lg p-1"><button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition bg-accent-brown text-text-dark-primary">Стих</button><button type="button" class="flex-1 px-sm md:px-md py-2 rounded-md text-sm font-secondary font-medium transition text-text-light-primary dark:text-text-dark-primary hover:bg-light-tertiary dark:hover:bg-dark-tertiary/50">Слайды</button></div></div>
+        <div class="flex-1 px-md pt-md pb-lg content-scalable"><div class="verse-reader-surface mx-auto w-full max-w-[800px] space-y-xl"><div class="space-y-md">
+          <div class="verse reader-source mb-0 font-verse verse-source w-fit max-w-full mx-auto text-left leading-snug">${v.lines.map((line, k) => `<p class="px-sm py-[2px] ${k % 2 ? '' : 'bg-light-secondary dark:bg-dark-secondary rounded md:bg-transparent md:dark:bg-transparent'}"><span class="reader-source font-verse verse-source text-accent-brown dark:text-accent-gold" style="font-size:calc(1.125rem * var(--content-font-size-multiplier, 1))">${line}</span></p>`).join('')}</div>
+          <div class="mt-md border-t border-light-tertiary dark:border-dark-tertiary"></div>
+          <p class="mt-md text-sm font-secondary text-text-light-tertiary dark:text-text-dark-tertiary text-center">В разделе для лекций только текст на санскрите. Перевод и комментарий — <a class="text-accent-brown dark:text-accent-gold hover:underline" href="https://vedabase.io/ru/library/sb/${c}/${ch}/${v.n}/" target="_blank" rel="noopener">на Ведабазе</a></p>
+        </div></div></div>
+        <div><nav class="flex items-stretch gap-xs px-sm md:px-md py-sm border-t border-light-tertiary dark:border-dark-tertiary bg-light-secondary/40 dark:bg-dark-secondary/40" aria-label="Навигация по стихам">${navBtn('prev', prev)}<div class="hidden sm:flex flex-col items-center justify-center px-sm border-x border-light-tertiary dark:border-dark-tertiary min-w-0 max-w-[200px]"><div class="text-[10px] font-secondary uppercase text-text-light-tertiary dark:text-text-dark-tertiary">Контекст</div><div class="text-xs font-secondary text-text-light-primary dark:text-text-dark-primary truncate max-w-full">ШБ, песнь ${c}, глава ${ch}</div><div class="text-[10px] font-secondary text-text-light-tertiary dark:text-text-dark-tertiary">${i + 1} / ${D.sb12.length}</div></div>${navBtn('next', next)}</nav>
+          <p class="px-md py-sm text-sm font-secondary text-text-light-tertiary dark:text-text-dark-tertiary text-center leading-relaxed border-t border-light-tertiary dark:border-dark-tertiary bg-light-secondary/40 dark:bg-dark-secondary/40">Навигация в рамках главы «Шримад-Бхагаватам ${c}.${ch}»</p></div>
+      </div>
+      <footer data-app-footer></footer>`;
+  },
+};
+const view = document.getElementById('view');
+function draw() {
+  const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  view.innerHTML = p[0] !== 'sb' ? routes.home() : p.length < 4 ? routes.chapter(+p[1] || 1, +p[2] || 2) : routes.verse(+p[1], +p[2], p[3]);
+  window.appRefresh();
+}
+view.addEventListener('click', event => {
+  const toggle = event.target.closest('[data-toggle]');
+  if (!toggle) return;
+  const key = toggle.dataset.toggle;
+  open.has(key) ? open.delete(key) : open.add(key);
+  const y = scrollY; draw(); scrollTo(0, y);
+});
+addEventListener('hashchange', () => { draw(); scrollTo(0, 0); });
+draw();
+</script>
+</body>
+</html>

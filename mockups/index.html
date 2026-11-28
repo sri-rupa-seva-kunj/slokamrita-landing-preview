@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru" data-theme="dark" style="color-scheme:dark;--content-font-size:100%;--content-font-size-multiplier:1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Макеты новых разделов — Шлокамрита</title>
+<link rel="stylesheet" href="app/css/2htsehdapv726.css">
+<link rel="stylesheet" href="app/css/32d-dtwspp0od.css">
+<link rel="stylesheet" href="app/css/078xrn-2_xz4g.css">
+<link rel="stylesheet" href="app/css/2vkmxsgf0durl.css">
+<link rel="stylesheet" href="app/css/0uq3e6h3z9cla.css">
+<link rel="stylesheet" href="app/extra.css?v=2">
+</head>
+<body>
+<div class="min-h-screen flex flex-col bg-light-primary dark:bg-dark-primary"><div class="flex-1 flex flex-col">
+  <header data-app-header></header>
+  <main class="flex-1"><div class="w-full px-md py-lg">
+    <div class="flex flex-col gap-xs mb-lg">
+      <h1 class="entity-name text-h2 font-primary font-semibold text-text-light-primary dark:text-text-dark-primary">Макеты новых разделов</h1>
+      <p class="font-secondary text-body-md text-text-light-secondary dark:text-text-dark-secondary">Четыре экрана для согласования. Они собраны на стилях и разметке приложения и админки, поэтому выглядят так же, как настоящие страницы. Макеты кликабельные; в верхней полосе переключается светлая и тёмная тема.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-md" id="items"></div>
+  </div></main>
+  <footer data-app-footer></footer>
+</div></div>
+<script src="app/icons.js?v=2"></script>
+<script>
+const ITEMS = [
+  ['lectures.html', 'Приложение', 'Шлоки для лекций', 'book-open', 'Отдельная страница «Лекции» со ссылкой в шапке: тексты книг из Vedabase для занятий, только санскрит, без перевода.',
+    ['Книга → песнь → глава → стих, как в аккордеоне каталога', 'Страница главы и страница стиха как у обычных стихов', 'Слайды есть, печати и прослушивания нет']],
+  ['blog.html', 'Приложение', 'Блог', 'newspaper', 'Список статей с обложками и фильтром по темам.',
+    ['Вход: иконка в шапке, кнопка в подвале и пункт «Блог» в нижнем меню телефона']],
+  ['article.html', 'Приложение', 'Страница статьи', 'newspaper', 'Текст статьи в стиле приложения, картинки и стих из каталога прямо в тексте, файлы для скачивания, переход к соседним статьям.',
+    []],
+  ['admin-blog.html', 'Админка', 'Статьи блога в админке', 'settings', 'Новый раздел «Блог → Статьи» и «Темы»: список и редактор.',
+    ['Список устроен как «Стихи»: фильтры, публикация, редактирование', 'Текст статьи в Markdown, импорт .md-файла, картинки в тексте', 'Вкладки «Русский» и «English», кнопка «Перевести»', 'Кнопка «Стих» вставляет стих из каталога, к статье можно прикрепить файлы']],
+];
+document.getElementById('items').innerHTML = ITEMS.map(([href, kind, title, iconName, text, points]) => `
+  <div class="card hover:bg-light-tertiary dark:hover:bg-dark-tertiary transition cursor-pointer p-md !bg-transparent hover:!bg-black/5 dark:hover:!bg-white/5 relative">
+    <a aria-label="${title}" class="absolute inset-0 z-0 rounded-[inherit]" href="${href}"></a>
+    <div class="relative z-10 h-full flex flex-col justify-between gap-sm pointer-events-none">
+      <div class="flex flex-col gap-xs">
+        <span class="text-xs font-secondary font-semibold uppercase text-accent-brown dark:text-accent-gold">${kind}</span>
+        <h4 class="entity-name font-primary font-semibold text-lg text-text-light-primary dark:text-text-dark-primary flex items-center gap-2"><i data-i="${iconName}" data-size="20"></i>${title}</h4>
+        <p class="font-secondary text-body-md text-text-light-secondary dark:text-text-dark-secondary">${text}</p>
+        ${points.length ? `<ul class="font-secondary text-sm text-text-light-secondary dark:text-text-dark-secondary flex flex-col gap-1" style="list-style:disc;padding-left:20px">${points.map(p => `<li>${p}</li>`).join('')}</ul>` : ''}
+      </div>
+      <span class="flex items-center gap-2 text-accent-brown dark:text-accent-gold font-secondary text-sm font-medium">Открыть макет<i data-i="chevron-right" data-size="18" data-stroke="1.5"></i></span>
+    </div>
+  </div>`).join('');
+</script>
+<script src="app/shell.js?v=2"></script>
+</body>
+</html>
